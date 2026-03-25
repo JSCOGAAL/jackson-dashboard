@@ -79,13 +79,13 @@
   @keyframes spin   { to { transform: rotate(360deg); } }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 
-  .metrics-division { border-bottom: 1px solid var(--border); padding: 10px 0; }
+  .metrics-division { border-bottom: 1px solid var(--border); padding: 14px 0; }
   .metrics-division:last-child { border-bottom: none; }
-  .metrics-div-name { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; color: var(--orange); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-  .metrics-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
-  .metric-item { background: var(--surface2); border-radius: 6px; padding: 7px 8px; text-align: center; }
-  .metric-item-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 3px; }
-  .metric-item-value { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; line-height: 1; }
+  .metrics-div-name { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; color: var(--orange); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .metrics-row { display: grid; grid-template-columns: repeat(9, 1fr); gap: 8px; }
+  .metric-item { background: var(--surface2); border-radius: 8px; padding: 12px 10px; text-align: center; }
+  .metric-item-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 5px; }
+  .metric-item-value { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 22px; line-height: 1; }
 </style>
 </head>
 <body>
@@ -113,16 +113,10 @@
     <div class="section-label">Month-to-Date Summary</div>
     <div class="stat-grid" id="dispatch-stats"></div>
 
-    <div class="section-label">Revenue &amp; Performance by Division</div>
-    <div class="charts-row">
-      <div class="chart-card">
-        <div class="chart-title">Revenue by Division</div>
-        <div class="chart-wrap"><canvas id="revenueChart"></canvas></div>
-      </div>
-      <div class="chart-card" style="display:flex;flex-direction:column;justify-content:space-between">
-        <div class="chart-title">Key Metrics by Division</div>
-        <div id="metrics-grid" style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:0"></div>
-      </div>
+    <div class="section-label">Key Metrics by Division</div>
+    <div class="chart-card" style="margin-bottom:24px">
+      <div id="metrics-grid"></div>
+    </div>
     </div>
 
     <div class="section-label">Division Detail</div>
@@ -143,7 +137,7 @@
 
 <script>
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0NT7lEqqpwrkgoy6vcIuFkgmUA979edn_-ufgaxcbcIQsyho4vTVPGXlA9C1zXEGz-A3Ysy95y1xy/pub?gid=2025286502&single=true&output=csv';
-let revenueChart;
+
 const ORANGE = '#F47B20', NAVY = '#1A6FC4';
 
 function fmt$(v) {
@@ -200,9 +194,6 @@ function renderDispatch(rows) {
     <div class="stat-card"><div class="stat-label">Completed Jobs</div><div class="stat-value">${totalCompleted}</div></div>
     <div class="stat-card yellow"><div class="stat-label">Canceled Jobs</div><div class="stat-value">${totalCanceled}</div></div>
   `;
-
-  const revLabels    = dataRows.map(r => r['Name'].trim().replace('HVAC Residential:','').trim());
-  const revValues    = dataRows.map(r => { const v = parseFloat(String(r['Completed Revenue']||'0').replace(/[$,\s]/g,'')); return isNaN(v) ? 0 : v; });
   // Build per-division metrics grid
   const metricsHTML = dataRows.map(r => {
     const name = r['Name'].trim().replace('HVAC Residential:','').trim();
@@ -224,7 +215,7 @@ function renderDispatch(rows) {
       </div>`).join('');
     return `<div class="metrics-division">
       <div class="metrics-div-name">${name}</div>
-      <div class="metrics-row" style="grid-template-columns:repeat(${metrics.length > 5 ? 5 : metrics.length},1fr)">${items}</div>
+      <div class="metrics-row" style="grid-template-columns:repeat(9,1fr)">${items}</div>
     </div>`;
   }).join('');
   document.getElementById('metrics-grid').innerHTML = metricsHTML;
