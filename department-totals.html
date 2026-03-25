@@ -78,6 +78,14 @@
 
   @keyframes spin   { to { transform: rotate(360deg); } }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+
+  .metrics-division { border-bottom: 1px solid var(--border); padding: 10px 0; }
+  .metrics-division:last-child { border-bottom: none; }
+  .metrics-div-name { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; color: var(--orange); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .metrics-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .metric-item { background: var(--surface2); border-radius: 6px; padding: 7px 8px; text-align: center; }
+  .metric-item-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 3px; }
+  .metric-item-value { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; line-height: 1; }
 </style>
 </head>
 <body>
@@ -105,15 +113,15 @@
     <div class="section-label">Month-to-Date Summary</div>
     <div class="stat-grid" id="dispatch-stats"></div>
 
-    <div class="section-label">Revenue &amp; Jobs by Division</div>
+    <div class="section-label">Revenue &amp; Performance by Division</div>
     <div class="charts-row">
       <div class="chart-card">
         <div class="chart-title">Revenue by Division</div>
         <div class="chart-wrap"><canvas id="revenueChart"></canvas></div>
       </div>
-      <div class="chart-card">
-        <div class="chart-title">Converted vs Unconverted Jobs</div>
-        <div class="chart-wrap"><canvas id="jobsChart"></canvas></div>
+      <div class="chart-card" style="display:flex;flex-direction:column;justify-content:space-between">
+        <div class="chart-title">Key Metrics by Division</div>
+        <div id="metrics-grid" style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:0"></div>
       </div>
     </div>
 
@@ -135,7 +143,7 @@
 
 <script>
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0NT7lEqqpwrkgoy6vcIuFkgmUA979edn_-ufgaxcbcIQsyho4vTVPGXlA9C1zXEGz-A3Ysy95y1xy/pub?gid=2025286502&single=true&output=csv';
-let revenueChart, jobsChart;
+let revenueChart;
 const ORANGE = '#F47B20', NAVY = '#1A6FC4';
 
 function fmt$(v) {
@@ -195,34 +203,31 @@ function renderDispatch(rows) {
 
   const revLabels    = dataRows.map(r => r['Name'].trim().replace('HVAC Residential:','').trim());
   const revValues    = dataRows.map(r => parseFloat(String(r['Completed Revenue']||'0').replace(/[$,]/g,'')));
-  const convValues   = dataRows.map(r => parseFloat(r['Converted Jobs']||0));
-  const unconvValues = dataRows.map(r => parseFloat(r['Unconverted Jobs']||0));
-
-  destroyChart(revenueChart);
-  revenueChart = new Chart(document.getElementById('revenueChart'), {
-    type:'doughnut',
-    data:{ labels:revLabels, datasets:[{ data:revValues, backgroundColor:[ORANGE, NAVY], borderWidth:0 }] },
-    options:{ responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ position:'bottom', labels:{ color:'#8A9BB0', font:{ family:'Barlow' }, padding:12 } },
-        tooltip:{ callbacks:{ label: ctx => ' ' + fmt$(ctx.raw) } } } }
-  });
-
-  destroyChart(jobsChart);
-  jobsChart = new Chart(document.getElementById('jobsChart'), {
-    type:'bar',
-    data:{ labels:revLabels, datasets:[
-      { label:'Converted',   data:convValues,   backgroundColor:'#34D399', borderRadius:4 },
-      { label:'Unconverted', data:unconvValues, backgroundColor:'#F87171', borderRadius:4 }
-    ]},
-    options:{ responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ display:true, labels:{ color:'#8A9BB0', font:{ family:'Barlow' } } },
-        tooltip:{ callbacks:{ label: ctx => ' ' + ctx.raw }}},
-      scales:{
-        x:{ grid:{ color:'rgba(255,255,255,0.04)' }, ticks:{ color:'#8A9BB0', font:{ family:'Barlow' } } },
-        y:{ grid:{ color:'rgba(255,255,255,0.04)' }, ticks:{ color:'#8A9BB0', font:{ family:'Barlow' } } }
-      }
-    }
-  });
+  // Build per-division metrics grid
+  const metricsHTML = dataRows.map(r => {
+    const name = r['Name'].trim().replace('HVAC Residential:','').trim();
+    const metrics = [
+      { label: 'WIP Jobs',      value: r['WIP Jobs']||'—',             color: '#F0F4F8' },
+      { label: 'Zero $ Jobs',   value: r['Zero Dollar Jobs']||'—',     color: '#F87171' },
+      { label: 'Recalls',       value: r['Recall Jobs']||'—',          color: '#FBBF24' },
+      { label: 'Returns',       value: r['Returns']||'—',              color: '#F87171' },
+      { label: 'Gross Margin',  value: r['Gross Margin %']||'—',       color: '#34D399' },
+      { label: 'Cost %',        value: r['Actual Costs as % of Sales']||'—', color: '#A78BFA' },
+      { label: 'No Charge',     value: r['No Charge Jobs']||'—',       color: '#8A9BB0' },
+      { label: 'Goal Daily',    value: r['Goal (Daily)']||'—',         color: '#F47B20' },
+      { label: 'Goal No Wknd',  value: r['Goal (No Weekends)']||'—',   color: '#F47B20' },
+    ];
+    const items = metrics.map(m => `
+      <div class="metric-item">
+        <div class="metric-item-label">${m.label}</div>
+        <div class="metric-item-value" style="color:${m.color}">${m.value}</div>
+      </div>`).join('');
+    return `<div class="metrics-division">
+      <div class="metrics-div-name">${name}</div>
+      <div class="metrics-row" style="grid-template-columns:repeat(${metrics.length > 5 ? 5 : metrics.length},1fr)">${items}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('metrics-grid').innerHTML = metricsHTML;
 
   document.getElementById('table-body').innerHTML = dataRows.map(r => `
     <tr>
