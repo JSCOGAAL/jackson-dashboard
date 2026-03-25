@@ -82,7 +82,7 @@
   .metrics-division { border-bottom: 1px solid var(--border); padding: 14px 0; }
   .metrics-division:last-child { border-bottom: none; }
   .metrics-div-name { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; color: var(--orange); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
-  .metrics-row { display: grid; grid-template-columns: repeat(9, 1fr); gap: 8px; }
+  .metrics-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
   .metric-item { background: var(--surface2); border-radius: 8px; padding: 12px 10px; text-align: center; }
   .metric-item-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 5px; }
   .metric-item-value { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 22px; line-height: 1; }
@@ -205,8 +205,6 @@ function renderDispatch(rows) {
       { label: 'Gross Margin',  value: r['Gross Margin %']||'—',       color: '#34D399' },
       { label: 'Cost %',        value: r['Actual Costs as % of Sales']||'—', color: '#A78BFA' },
       { label: 'No Charge',     value: r['No Charge Jobs']||'—',       color: '#8A9BB0' },
-      { label: 'Goal Daily',    value: r['Goal (Daily)']||'—',         color: '#F47B20' },
-      { label: 'Goal No Wknd',  value: r['Goal (No Weekends)']||'—',   color: '#F47B20' },
     ];
     const items = metrics.map(m => `
       <div class="metric-item">
@@ -215,7 +213,7 @@ function renderDispatch(rows) {
       </div>`).join('');
     return `<div class="metrics-division">
       <div class="metrics-div-name">${name}</div>
-      <div class="metrics-row" style="grid-template-columns:repeat(9,1fr)">${items}</div>
+      <div class="metrics-row" style="grid-template-columns:repeat(7,1fr)">${items}</div>
     </div>`;
   }).join('');
   document.getElementById('metrics-grid').innerHTML = metricsHTML;
