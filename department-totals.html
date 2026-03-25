@@ -35,16 +35,6 @@
 
   main { padding: 32px; max-width: 1600px; margin: 0 auto; }
 
-  .page-title {
-    display: flex; align-items: center; gap: 16px;
-    margin-bottom: 28px; padding: 16px 20px;
-    background: linear-gradient(135deg, rgba(244,123,32,0.12), rgba(26,43,74,0.3));
-    border: 1px solid rgba(244,123,32,0.25); border-left: 4px solid var(--orange); border-radius: 10px;
-  }
-  .page-title-icon { font-size: 20px; width: 42px; height: 42px; background: rgba(244,123,32,0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .page-title h2 { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 20px; text-transform: uppercase; letter-spacing: 2px; line-height: 1; }
-  .page-title p  { font-size: 12px; color: var(--muted); margin-top: 3px; }
-
   .section-label { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 3px; color: var(--orange); margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
   .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
@@ -109,14 +99,6 @@
 
 <main>
 
-  <div class="page-title">
-    <div class="page-title-icon">📞</div>
-    <div>
-      <h2>Department Totals</h2>
-      <p>Month-to-date revenue, conversions, and division breakdown</p>
-    </div>
-  </div>
-
   <div id="loading" class="loading"><div class="spinner"></div> Loading Department Data...</div>
   <div id="content" style="display:none">
 
@@ -141,9 +123,7 @@
       <div class="table-scroll">
         <table>
           <thead><tr>
-            <th>Division</th><th>Opportunities</th><th>Converted</th><th>Unconverted</th>
-            <th>Completed</th><th>Canceled</th><th>Revenue</th><th>Opp Avg</th>
-            <th>Conv Avg</th><th>Opp Conv Rate</th><th>Total Conv Rate</th>
+            <th>Division</th><th>Canceled</th><th>Revenue</th><th>Crew Days</th>
           </tr></thead>
           <tbody id="table-body"></tbody>
         </table>
@@ -247,16 +227,9 @@ function renderDispatch(rows) {
   document.getElementById('table-body').innerHTML = dataRows.map(r => `
     <tr>
       <td class="name-cell">${r['Name'].trim()}</td>
-      <td>${r['Opportunity']||'-'}</td>
-      <td style="color:var(--success)">${r['Converted Jobs']||'-'}</td>
-      <td style="color:var(--danger)">${r['Unconverted Jobs']||'-'}</td>
-      <td>${r['Completed Jobs']||'-'}</td>
       <td style="color:var(--warning)">${r['Canceled Jobs']||'-'}</td>
       <td style="color:var(--orange);font-weight:500">${fmt$(r['Completed Revenue'])}</td>
-      <td>${fmt$(r['Opportunity Job Average'])}</td>
-      <td>${fmt$(r['Converted Job Average'])}</td>
-      <td>${pctBadge(r['Opportunity Conversion Rate'])}</td>
-      <td>${pctBadge(r['Total Conversion Rate'])}</td>
+      <td>${r['Crew Days']||'—'}</td>
     </tr>`).join('');
 
   document.getElementById('loading').style.display = 'none';
