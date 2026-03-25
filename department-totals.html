@@ -67,15 +67,6 @@
   .chart-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; color: var(--text); }
   .chart-wrap { position: relative; height: 220px; }
 
-  .conv-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 24px; }
-  .conv-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; text-align: center; animation: fadeUp 0.4s ease both; }
-  .conv-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 12px; }
-  .ring-wrap { position: relative; width: 76px; height: 76px; margin: 0 auto 10px; }
-  .ring-svg { width: 76px; height: 76px; transform: rotate(-90deg); }
-  .ring-bg   { fill: none; stroke: var(--surface2); stroke-width: 8; }
-  .ring-fill { fill: none; stroke-width: 8; stroke-linecap: round; }
-  .ring-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 15px; }
-
   .table-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 24px; animation: fadeUp 0.4s ease both; }
   .table-header { padding: 14px 18px; border-bottom: 1px solid var(--border); font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
   .table-scroll { overflow-x: auto; }
@@ -131,9 +122,6 @@
 
     <div class="section-label">Month-to-Date Summary</div>
     <div class="stat-grid" id="dispatch-stats"></div>
-
-    <div class="section-label">Conversion Rates</div>
-    <div class="conv-row" id="conv-cards"></div>
 
     <div class="section-label">Revenue &amp; Jobs by Division</div>
     <div class="charts-row">
@@ -224,28 +212,6 @@ function renderDispatch(rows) {
     <div class="stat-card"><div class="stat-label">Completed Jobs</div><div class="stat-value">${totalCompleted}</div></div>
     <div class="stat-card yellow"><div class="stat-label">Canceled Jobs</div><div class="stat-value">${totalCanceled}</div></div>
   `;
-
-  const oppConv   = parseFloat(String(paceRow['Opportunity Conversion Rate']||'0').replace('%',''));
-  const totalConv = parseFloat(String(paceRow['Total Conversion Rate']||'0').replace('%',''));
-  const replConv  = parseFloat(String(paceRow['Replacement Lead Conversion Rate']||'0').replace('%',''));
-
-  document.getElementById('conv-cards').innerHTML = [
-    { label:'Opp Conversion',   pct:oppConv,   color:ORANGE },
-    { label:'Total Conversion', pct:totalConv, color:'#34D399' },
-    { label:'Replacement Lead', pct:replConv,  color:'#FBBF24' }
-  ].map(({label,pct,color}) => {
-    const circ = 2*Math.PI*33, dash = isNaN(pct)?0:(pct/100)*circ;
-    return `<div class="conv-card">
-      <div class="conv-label">${label}</div>
-      <div class="ring-wrap">
-        <svg class="ring-svg" viewBox="0 0 76 76">
-          <circle class="ring-bg" cx="38" cy="38" r="33"/>
-          <circle class="ring-fill" cx="38" cy="38" r="33" stroke="${color}" stroke-dasharray="${dash} ${circ}"/>
-        </svg>
-        <div class="ring-text" style="color:${color}">${isNaN(pct)?'—':pct.toFixed(1)+'%'}</div>
-      </div>
-    </div>`;
-  }).join('');
 
   const revLabels    = dataRows.map(r => r['Name'].trim().replace('HVAC Residential:','').trim());
   const revValues    = dataRows.map(r => parseFloat(String(r['Completed Revenue']||'0').replace(/[$,]/g,'')));
