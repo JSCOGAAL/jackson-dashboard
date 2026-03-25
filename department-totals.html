@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jackson Services — Department Totals</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --orange: #F47B20; --orange-light: #FF9A45;
+    --navy: #1A2B4A; --navy-light: #243660; --navy-chart: #1A6FC4;
+    --bg: #111827; --surface: #1E2A3B; --surface2: #253347;
+    --text: #F0F4F8; --muted: #8A9BB0; --border: rgba(255,255,255,0.07);
+    --success: #34D399; --warning: #FBBF24; --danger: #F87171;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; font-weight: 300; min-height: 100vh; }
+
+  header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+    border-bottom: 3px solid var(--orange);
+    padding: 18px 32px; display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  }
+  .logo-area { display: flex; align-items: center; gap: 14px; }
+  .logo-icon { width: 42px; height: 42px; background: var(--orange); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 19px; color: white; letter-spacing: -1px; }
+  .logo-text h1 { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 21px; letter-spacing: 1px; text-transform: uppercase; line-height: 1; }
+  .logo-text p  { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-top: 3px; }
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .last-updated { font-size: 11px; color: var(--muted); text-align: right; }
+  .refresh-btn { background: var(--orange); color: white; border: none; padding: 8px 18px; border-radius: 6px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+  .refresh-btn:hover { background: var(--orange-light); }
+
+  main { padding: 32px; max-width: 1600px; margin: 0 auto; }
+
+  .page-title {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 28px; padding: 16px 20px;
+    background: linear-gradient(135deg, rgba(244,123,32,0.12), rgba(26,43,74,0.3));
+    border: 1px solid rgba(244,123,32,0.25); border-left: 4px solid var(--orange); border-radius: 10px;
+  }
+  .page-title-icon { font-size: 20px; width: 42px; height: 42px; background: rgba(244,123,32,0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .page-title h2 { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 20px; text-transform: uppercase; letter-spacing: 2px; line-height: 1; }
+  .page-title p  { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+  .section-label { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 3px; color: var(--orange); margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; position: relative; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; animation: fadeUp 0.4s ease both; }
+  .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+  .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--orange); }
+  .stat-card.green::before  { background: var(--success); }
+  .stat-card.yellow::before { background: var(--warning); }
+  .stat-card.blue::before   { background: var(--navy-chart); }
+  .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 7px; }
+  .stat-value { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 30px; line-height: 1; color: var(--text); }
+  .stat-value.orange { color: var(--orange); }
+  .stat-value.green  { color: var(--success); }
+  .stat-sub { font-size: 11px; color: var(--muted); margin-top: 5px; }
+
+  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 24px; }
+  @media (max-width: 800px) { .charts-row { grid-template-columns: 1fr; } }
+  .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; animation: fadeUp 0.4s ease both; }
+  .chart-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; color: var(--text); }
+  .chart-wrap { position: relative; height: 220px; }
+
+  .conv-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 24px; }
+  .conv-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; text-align: center; animation: fadeUp 0.4s ease both; }
+  .conv-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 12px; }
+  .ring-wrap { position: relative; width: 76px; height: 76px; margin: 0 auto 10px; }
+  .ring-svg { width: 76px; height: 76px; transform: rotate(-90deg); }
+  .ring-bg   { fill: none; stroke: var(--surface2); stroke-width: 8; }
+  .ring-fill { fill: none; stroke-width: 8; stroke-linecap: round; }
+  .ring-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 15px; }
+
+  .table-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 24px; animation: fadeUp 0.4s ease both; }
+  .table-header { padding: 14px 18px; border-bottom: 1px solid var(--border); font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead tr { background: var(--surface2); }
+  th { padding: 10px 13px; text-align: left; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); white-space: nowrap; }
+  tbody tr { border-top: 1px solid var(--border); transition: background 0.15s; }
+  tbody tr:hover { background: var(--surface2); }
+  td { padding: 10px 13px; white-space: nowrap; }
+  td.name-cell { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; color: var(--text); }
+
+  .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.5px; }
+  .badge-green  { background: rgba(52,211,153,0.15); color: var(--success); }
+  .badge-orange { background: rgba(244,123,32,0.15); color: var(--orange); }
+  .badge-yellow { background: rgba(251,191,36,0.15); color: var(--warning); }
+
+  .loading { display: flex; align-items: center; justify-content: center; padding: 60px; color: var(--muted); font-family: 'Barlow Condensed', sans-serif; font-size: 16px; letter-spacing: 2px; text-transform: uppercase; gap: 12px; }
+  .spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--orange); border-radius: 50%; animation: spin 0.8s linear infinite; }
+
+  @keyframes spin   { to { transform: rotate(360deg); } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-area">
+    <div class="logo-icon">JS</div>
+    <div class="logo-text">
+      <h1>Jackson Services</h1>
+      <p>Department Totals</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="last-updated" id="lastUpdated">Loading data...</div>
+    <div class="last-updated" style="opacity:0.5">Auto-refreshes hourly</div>
+    <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+  </div>
+</header>
+
+<main>
+
+  <div class="page-title">
+    <div class="page-title-icon">📞</div>
+    <div>
+      <h2>Department Totals</h2>
+      <p>Month-to-date revenue, conversions, and division breakdown</p>
+    </div>
+  </div>
+
+  <div id="loading" class="loading"><div class="spinner"></div> Loading Department Data...</div>
+  <div id="content" style="display:none">
+
+    <div class="section-label">Month-to-Date Summary</div>
+    <div class="stat-grid" id="dispatch-stats"></div>
+
+    <div class="section-label">Conversion Rates</div>
+    <div class="conv-row" id="conv-cards"></div>
+
+    <div class="section-label">Revenue &amp; Jobs by Division</div>
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">Revenue by Division</div>
+        <div class="chart-wrap"><canvas id="revenueChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Converted vs Unconverted Jobs</div>
+        <div class="chart-wrap"><canvas id="jobsChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="section-label">Division Detail</div>
+    <div class="table-card">
+      <div class="table-header">Department Totals by Division</div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr>
+            <th>Division</th><th>Opportunities</th><th>Converted</th><th>Unconverted</th>
+            <th>Completed</th><th>Canceled</th><th>Revenue</th><th>Opp Avg</th>
+            <th>Conv Avg</th><th>Opp Conv Rate</th><th>Total Conv Rate</th>
+          </tr></thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0NT7lEqqpwrkgoy6vcIuFkgmUA979edn_-ufgaxcbcIQsyho4vTVPGXlA9C1zXEGz-A3Ysy95y1xy/pub?gid=2025286502&single=true&output=csv';
+let revenueChart, jobsChart;
+const ORANGE = '#F47B20', NAVY = '#1A6FC4';
+
+function fmt$(v) {
+  const n = parseFloat(String(v).replace(/[$,%]/g,''));
+  if (isNaN(n)) return v;
+  return '$' + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function fmtPct(v) {
+  const n = parseFloat(String(v).replace('%','').trim());
+  return isNaN(n) ? v : n.toFixed(2) + '%';
+}
+function pctBadge(v) {
+  const n = parseFloat(String(v).replace('%',''));
+  if (isNaN(n)) return `<span class="badge badge-orange">${v}</span>`;
+  if (n >= 70)  return `<span class="badge badge-green">${fmtPct(v)}</span>`;
+  if (n >= 50)  return `<span class="badge badge-yellow">${fmtPct(v)}</span>`;
+  return `<span class="badge badge-orange">${fmtPct(v)}</span>`;
+}
+function destroyChart(c) { if (c) c.destroy(); }
+
+async function fetchCSV(url) {
+  try { const r = await fetch(url); if (r.ok) return await r.text(); } catch(e) {}
+  try { const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`); if (r.ok) return await r.text(); } catch(e) {}
+  return null;
+}
+
+async function loadData() {
+  document.getElementById('lastUpdated').textContent = 'Refreshing...';
+  const csv = await fetchCSV(SHEET_URL);
+  if (!csv) {
+    document.getElementById('loading').innerHTML = '⚠️ Could not load department data. Check sheet sharing settings.';
+    return;
+  }
+  renderDispatch(Papa.parse(csv, { header: true, skipEmptyLines: true }).data);
+  document.getElementById('lastUpdated').textContent = 'Updated: ' + new Date().toLocaleString();
+}
+
+function renderDispatch(rows) {
+  const divs     = rows.filter(r => r['Name'] && r['Name'].trim());
+  const totalRow = divs.find(r => !r['Name'].includes(':')) || divs[divs.length-1];
+  const dataRows = divs.filter(r => r['Name'].includes(':') || r['Name'].toLowerCase().includes('hvac'));
+
+  const totalRevenue   = dataRows.reduce((s,r) => s + parseFloat(String(r['Completed Revenue']||'0').replace(/[$,]/g,'')), 0);
+  const totalOpps      = dataRows.reduce((s,r) => s + parseFloat(r['Opportunity']||0), 0);
+  const totalConverted = dataRows.reduce((s,r) => s + parseFloat(r['Converted Jobs']||0), 0);
+  const totalCompleted = dataRows.reduce((s,r) => s + parseFloat(r['Completed Jobs']||0), 0);
+  const totalCanceled  = dataRows.reduce((s,r) => s + parseFloat(r['Canceled Jobs']||0), 0);
+  const paceRow        = totalRow || dataRows[0] || {};
+
+  document.getElementById('dispatch-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-label">MTD Revenue</div><div class="stat-value orange">${fmt$(totalRevenue)}</div><div class="stat-sub">Completed jobs</div></div>
+    <div class="stat-card blue"><div class="stat-label">Total Opportunities</div><div class="stat-value">${totalOpps}</div><div class="stat-sub">This month</div></div>
+    <div class="stat-card green"><div class="stat-label">Converted Jobs</div><div class="stat-value green">${totalConverted}</div><div class="stat-sub">Of ${totalOpps} opportunities</div></div>
+    <div class="stat-card"><div class="stat-label">Completed Jobs</div><div class="stat-value">${totalCompleted}</div></div>
+    <div class="stat-card yellow"><div class="stat-label">Canceled Jobs</div><div class="stat-value">${totalCanceled}</div></div>
+  `;
+
+  const oppConv   = parseFloat(String(paceRow['Opportunity Conversion Rate']||'0').replace('%',''));
+  const totalConv = parseFloat(String(paceRow['Total Conversion Rate']||'0').replace('%',''));
+  const replConv  = parseFloat(String(paceRow['Replacement Lead Conversion Rate']||'0').replace('%',''));
+
+  document.getElementById('conv-cards').innerHTML = [
+    { label:'Opp Conversion',   pct:oppConv,   color:ORANGE },
+    { label:'Total Conversion', pct:totalConv, color:'#34D399' },
+    { label:'Replacement Lead', pct:replConv,  color:'#FBBF24' }
+  ].map(({label,pct,color}) => {
+    const circ = 2*Math.PI*33, dash = isNaN(pct)?0:(pct/100)*circ;
+    return `<div class="conv-card">
+      <div class="conv-label">${label}</div>
+      <div class="ring-wrap">
+        <svg class="ring-svg" viewBox="0 0 76 76">
+          <circle class="ring-bg" cx="38" cy="38" r="33"/>
+          <circle class="ring-fill" cx="38" cy="38" r="33" stroke="${color}" stroke-dasharray="${dash} ${circ}"/>
+        </svg>
+        <div class="ring-text" style="color:${color}">${isNaN(pct)?'—':pct.toFixed(1)+'%'}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const revLabels    = dataRows.map(r => r['Name'].trim().replace('HVAC Residential:','').trim());
+  const revValues    = dataRows.map(r => parseFloat(String(r['Completed Revenue']||'0').replace(/[$,]/g,'')));
+  const convValues   = dataRows.map(r => parseFloat(r['Converted Jobs']||0));
+  const unconvValues = dataRows.map(r => parseFloat(r['Unconverted Jobs']||0));
+
+  destroyChart(revenueChart);
+  revenueChart = new Chart(document.getElementById('revenueChart'), {
+    type:'doughnut',
+    data:{ labels:revLabels, datasets:[{ data:revValues, backgroundColor:[ORANGE, NAVY], borderWidth:0 }] },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'bottom', labels:{ color:'#8A9BB0', font:{ family:'Barlow' }, padding:12 } },
+        tooltip:{ callbacks:{ label: ctx => ' ' + fmt$(ctx.raw) } } } }
+  });
+
+  destroyChart(jobsChart);
+  jobsChart = new Chart(document.getElementById('jobsChart'), {
+    type:'bar',
+    data:{ labels:revLabels, datasets:[
+      { label:'Converted',   data:convValues,   backgroundColor:'#34D399', borderRadius:4 },
+      { label:'Unconverted', data:unconvValues, backgroundColor:'#F87171', borderRadius:4 }
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:true, labels:{ color:'#8A9BB0', font:{ family:'Barlow' } } },
+        tooltip:{ callbacks:{ label: ctx => ' ' + ctx.raw }}},
+      scales:{
+        x:{ grid:{ color:'rgba(255,255,255,0.04)' }, ticks:{ color:'#8A9BB0', font:{ family:'Barlow' } } },
+        y:{ grid:{ color:'rgba(255,255,255,0.04)' }, ticks:{ color:'#8A9BB0', font:{ family:'Barlow' } } }
+      }
+    }
+  });
+
+  document.getElementById('table-body').innerHTML = dataRows.map(r => `
+    <tr>
+      <td class="name-cell">${r['Name'].trim()}</td>
+      <td>${r['Opportunity']||'-'}</td>
+      <td style="color:var(--success)">${r['Converted Jobs']||'-'}</td>
+      <td style="color:var(--danger)">${r['Unconverted Jobs']||'-'}</td>
+      <td>${r['Completed Jobs']||'-'}</td>
+      <td style="color:var(--warning)">${r['Canceled Jobs']||'-'}</td>
+      <td style="color:var(--orange);font-weight:500">${fmt$(r['Completed Revenue'])}</td>
+      <td>${fmt$(r['Opportunity Job Average'])}</td>
+      <td>${fmt$(r['Converted Job Average'])}</td>
+      <td>${pctBadge(r['Opportunity Conversion Rate'])}</td>
+      <td>${pctBadge(r['Total Conversion Rate'])}</td>
+    </tr>`).join('');
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('content').style.display = 'block';
+}
+
+loadData();
+
+// Auto-refresh every hour
+setInterval(loadData, 60 * 60 * 1000);
+</script>
+</body>
+</html>
