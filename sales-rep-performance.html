@@ -78,6 +78,15 @@
 
   @keyframes spin   { to { transform: rotate(360deg); } }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+
+  .goal-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 24px; position: relative; overflow: hidden; margin-bottom: 24px; animation: fadeUp 0.4s ease both; }
+  .goal-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--success); }
+  .goal-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 14px; }
+  .goal-label { font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 6px; }
+  .goal-amount { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 48px; line-height: 1; }
+  .progress-track { height: 36px; background: var(--surface2); border-radius: 8px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 8px; display: flex; align-items: center; justify-content: flex-end; padding-right: 14px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 16px; color: white; transition: width 1s cubic-bezier(0.4,0,0.2,1); min-width: 70px; }
+  .goal-meta { display: flex; justify-content: space-between; margin-top: 8px; font-size: 14px; color: var(--muted); }
 </style>
 </head>
 <body>
@@ -101,6 +110,32 @@
 
   <div id="loading" class="loading"><div class="spinner"></div> Loading Sales Data...</div>
   <div id="content" style="display:none">
+
+    <div class="section-label">Monthly Goal Progress</div>
+    <div class="goal-card">
+      <div class="goal-row">
+        <div>
+          <div class="goal-label">Total Team Sales</div>
+          <div class="goal-amount orange" id="goal-actual">—</div>
+        </div>
+        <div style="text-align:center">
+          <div class="goal-label">Progress</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:48px;line-height:1" id="goal-pct">—</div>
+        </div>
+        <div style="text-align:right">
+          <div class="goal-label">Monthly Goal</div>
+          <div class="goal-amount" style="color:var(--muted)">$675,000</div>
+        </div>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="goal-bar" style="width:0%"></div>
+      </div>
+      <div class="goal-meta">
+        <span>$0</span>
+        <span id="goal-remaining"></span>
+        <span>$675,000</span>
+      </div>
+    </div>
 
     <div class="section-label">Team Totals</div>
     <div class="stat-grid" id="team-stats"></div>
@@ -183,6 +218,20 @@ function renderSales(rows) {
   const teamCloseRate = totalOpps > 0 ? (totalClosed/totalOpps*100).toFixed(1) : 0;
   const avgSale       = totalClosed > 0 ? totalSales/totalClosed : 0;
   const totalWIP      = reps.reduce((s,r) => s + parseFloat(r['WIP Jobs']||0), 0);
+
+
+  const GOAL = 675000;
+  const pct = Math.min((totalSales / GOAL) * 100, 100);
+  const remaining = GOAL - totalSales;
+  const barColor = pct >= 100 ? 'var(--success)' : pct >= 75 ? 'var(--orange)' : 'var(--navy-chart)';
+  const pctColor = pct >= 100 ? 'var(--success)' : pct >= 75 ? 'var(--orange)' : 'var(--danger)';
+  document.getElementById('goal-actual').textContent = fmt$(totalSales);
+  document.getElementById('goal-pct').textContent = pct.toFixed(1) + '%';
+  document.getElementById('goal-pct').style.color = pctColor;
+  document.getElementById('goal-bar').style.width = pct + '%';
+  document.getElementById('goal-bar').style.background = barColor;
+  document.getElementById('goal-bar').textContent = pct.toFixed(1) + '%';
+  document.getElementById('goal-remaining').textContent = remaining > 0 ? fmt$(remaining) + ' to go' : '🎉 Goal reached!';
 
   document.getElementById('team-stats').innerHTML = `
     <div class="stat-card"><div class="stat-label">Total Team Sales</div><div class="stat-value orange">${fmt$(totalSales)}</div><div class="stat-sub">${totalClosed} closed deals</div></div>
