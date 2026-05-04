@@ -220,7 +220,7 @@ function renderSales(rows) {
   const totalWIP      = reps.reduce((s,r) => s + parseFloat(r['WIP Jobs']||0), 0);
 
 
-  const GOAL = 675000;
+  const GOAL = 750000;
   const pct = Math.min((totalSales / GOAL) * 100, 100);
   const remaining = GOAL - totalSales;
   const barColor = pct >= 100 ? 'var(--success)' : pct >= 75 ? 'var(--orange)' : 'var(--navy-chart)';
