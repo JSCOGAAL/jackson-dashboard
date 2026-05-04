@@ -124,7 +124,7 @@
         </div>
         <div style="text-align:right">
           <div class="goal-label">Monthly Goal</div>
-          <div class="goal-amount" style="color:var(--muted)">$750,000</div>
+          <div class="goal-amount" style="color:var(--muted)" id="goal-display">—</div>
         </div>
       </div>
       <div class="progress-track">
@@ -133,7 +133,7 @@
       <div class="goal-meta">
         <span>$0</span>
         <span id="goal-remaining"></span>
-        <span>$750,000</span>
+        <span id="goal-display-end">—</span>
       </div>
     </div>
 
@@ -170,9 +170,20 @@
 </main>
 
 <script>
+/* ══════════════════════════════════════════
+   CONFIG — update MONTHLY_GOAL each month
+   This is the ONLY place you need to change.
+══════════════════════════════════════════ */
+const MONTHLY_GOAL = 750000;
+
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0NT7lEqqpwrkgoy6vcIuFkgmUA979edn_-ufgaxcbcIQsyho4vTVPGXlA9C1zXEGz-A3Ysy95y1xy/pub?gid=0&single=true&output=csv';
 let salesChart, closeRateChart;
 const COLORS = ['#F47B20','#1A6FC4','#34D399','#FBBF24','#A78BFA','#F87171'];
+
+// Format goal as $XXX,XXX (no decimals) for the static displays
+const goalDisplay = '$' + MONTHLY_GOAL.toLocaleString('en-US');
+document.getElementById('goal-display').textContent = goalDisplay;
+document.getElementById('goal-display-end').textContent = goalDisplay;
 
 function fmt$(v) {
   const n = parseFloat(String(v).replace(/[$,%]/g,''));
@@ -219,10 +230,8 @@ function renderSales(rows) {
   const avgSale       = totalClosed > 0 ? totalSales/totalClosed : 0;
   const totalWIP      = reps.reduce((s,r) => s + parseFloat(r['WIP Jobs']||0), 0);
 
-
-  const GOAL = 750000;
-  const pct = Math.min((totalSales / GOAL) * 100, 100);
-  const remaining = GOAL - totalSales;
+  const pct = Math.min((totalSales / MONTHLY_GOAL) * 100, 100);
+  const remaining = MONTHLY_GOAL - totalSales;
   const barColor = pct >= 100 ? 'var(--success)' : pct >= 75 ? 'var(--orange)' : 'var(--navy-chart)';
   const pctColor = pct >= 100 ? 'var(--success)' : pct >= 75 ? 'var(--orange)' : 'var(--danger)';
   document.getElementById('goal-actual').textContent = fmt$(totalSales);
