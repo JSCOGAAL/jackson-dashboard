@@ -4,128 +4,122 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Jackson Services — Department Totals</title>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --orange: #F47B20; --orange-light: #FF9A45;
-    --navy: #1A2B4A; --navy-light: #243660; --navy-chart: #1A6FC4;
-    --bg: #111827; --surface: #1E2A3B; --surface2: #253347;
-    --text: #F0F4F8; --muted: #8A9BB0; --border: rgba(255,255,255,0.07);
-    --success: #34D399; --warning: #FBBF24; --danger: #F87171;
+    --bg: #f4f2ee; --surface: #ffffff; --surface2: #f9f8f6;
+    --border: rgba(0,0,0,0.08); --border-strong: rgba(0,0,0,0.14);
+    --text: #1a1815; --text-secondary: #6b6760; --text-tertiary: #a09d98;
+    --accent: #d4500a; --success: #1a7a57; --warning: #c4460d;
+    --radius: 10px; --radius-sm: 6px;
   }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; font-weight: 300; min-height: 100vh; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; line-height: 1.5; }
 
-  header {
-    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
-    border-bottom: 3px solid var(--orange);
-    padding: 18px 32px; display: flex; align-items: center; justify-content: space-between;
-    position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 24px rgba(0,0,0,0.5);
-  }
-  .logo-area { display: flex; align-items: center; gap: 14px; }
-  .logo-icon { width: 42px; height: 42px; background: var(--orange); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 19px; color: white; letter-spacing: -1px; }
-  .logo-text h1 { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 21px; letter-spacing: 1px; text-transform: uppercase; line-height: 1; }
-  .logo-text p  { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-top: 3px; }
-  .header-right { display: flex; align-items: center; gap: 16px; }
-  .last-updated { font-size: 11px; color: var(--muted); text-align: right; }
-  .refresh-btn { background: var(--orange); color: white; border: none; padding: 8px 18px; border-radius: 6px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
-  .refresh-btn:hover { background: var(--orange-light); }
+  #loading-screen { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999; gap: 16px; }
+  .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 13px; color: var(--text-secondary); }
 
-  main { padding: 32px; max-width: 100%; margin: 0; }
+  #dashboard { display: none; }
 
-  .section-label { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; text-transform: uppercase; letter-spacing: 3px; color: var(--orange); margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
-  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 52px; position: sticky; top: 0; z-index: 100; }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-mark { width: 28px; height: 28px; background: var(--accent); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 11px; }
+  .logo-text { font-size: 14px; font-weight: 600; letter-spacing: -0.3px; }
+  .logo-sub { font-size: 11px; color: var(--text-secondary); margin-left: 6px; }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .header-meta { font-size: 11px; color: var(--text-tertiary); font-family: 'DM Mono', monospace; }
+  .refresh-btn { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500; padding: 5px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); background: var(--surface2); color: var(--text-secondary); cursor: pointer; }
+  .refresh-btn:hover { color: var(--text); border-color: var(--accent); }
 
-  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); gap: 14px; margin-bottom: 24px; }
-  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 24px; position: relative; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; animation: fadeUp 0.4s ease both; }
-  .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
-  .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--orange); }
-  .stat-card.green::before  { background: var(--success); }
-  .stat-card.yellow::before { background: var(--warning); }
-  .stat-card.blue::before   { background: var(--navy-chart); }
-  .stat-label { font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 9px; }
-  .stat-value { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 48px; line-height: 1; color: var(--text); }
-  .stat-value.orange { color: var(--orange); }
-  .stat-value.green  { color: var(--success); }
-  .stat-sub { font-size: 14px; color: var(--muted); margin-top: 7px; }
+  .main { padding: 20px 24px; }
 
-  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 24px; }
-  @media (max-width: 800px) { .charts-row { grid-template-columns: 1fr; } }
-  .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; animation: fadeUp 0.4s ease both; }
-  .chart-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; color: var(--text); }
-  .chart-wrap { position: relative; height: 220px; }
+  /* KPI GRID */
+  .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 14px; }
+  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; position: relative; overflow: hidden; }
+  .kpi::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--accent); opacity: 0.35; }
+  .kpi.green::before  { background: var(--success); opacity: 1; }
+  .kpi.orange::before { background: var(--accent); opacity: 1; }
+  .kpi.blue::before   { background: #1a5fa8; opacity: 1; }
+  .kpi-label { font-size: 10px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
+  .kpi-val { font-size: 24px; font-weight: 600; letter-spacing: -0.8px; color: var(--text); line-height: 1; margin-bottom: 3px; }
+  .kpi-val.accent { color: var(--accent); }
+  .kpi-val.green  { color: var(--success); }
+  .kpi-sub { font-size: 11px; color: var(--text-tertiary); }
 
-  .table-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 24px; animation: fadeUp 0.4s ease both; }
-  .table-header { padding: 14px 18px; border-bottom: 1px solid var(--border); font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
-  .table-scroll { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 16px; }
-  thead tr { background: var(--surface2); }
-  th { padding: 12px 16px; text-align: left; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); white-space: nowrap; }
-  tbody tr { border-top: 1px solid var(--border); transition: background 0.15s; }
-  tbody tr:hover { background: var(--surface2); }
-  td { padding: 14px 16px; white-space: nowrap; }
-  td.name-cell { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 20px; color: var(--text); }
+  /* METRICS GRID */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 14px; }
+  .card-head { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  .card-title { font-size: 12px; font-weight: 600; letter-spacing: -0.2px; }
 
-  .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.5px; }
-  .badge-green  { background: rgba(52,211,153,0.15); color: var(--success); }
-  .badge-orange { background: rgba(244,123,32,0.15); color: var(--orange); }
-  .badge-yellow { background: rgba(251,191,36,0.15); color: var(--warning); }
+  .metrics-wrap { padding: 12px 16px; }
+  .metrics-division { padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .metrics-division:last-child { border-bottom: none; padding-bottom: 0; }
+  .metrics-div-name { font-size: 11px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+  .metrics-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .metric-item { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 6px; text-align: center; }
+  .metric-item-label { font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-tertiary); margin-bottom: 4px; }
+  .metric-item-value { font-size: 16px; font-weight: 600; letter-spacing: -0.5px; line-height: 1; }
 
-  .loading { display: flex; align-items: center; justify-content: center; padding: 60px; color: var(--muted); font-family: 'Barlow Condensed', sans-serif; font-size: 16px; letter-spacing: 2px; text-transform: uppercase; gap: 12px; }
-  .spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--orange); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  /* TABLE */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  thead th { padding: 8px 12px; text-align: left; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-secondary); border-bottom: 1px solid var(--border); white-space: nowrap; background: var(--surface2); }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: #faf9f7; }
+  td.name-cell { font-weight: 600; font-size: 13px; }
 
-  @keyframes spin   { to { transform: rotate(360deg); } }
-  @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+  .badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .badge-green  { background: #e5f5ee; color: var(--success); }
+  .badge-orange { background: #fdf0ea; color: var(--accent); }
+  .badge-yellow { background: #fdf6e3; color: #a06010; }
 
-  .metrics-division { border-bottom: 1px solid var(--border); padding: 14px 0; }
-  .metrics-division:last-child { border-bottom: none; }
-  .metrics-div-name { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 20px; color: var(--orange); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
-  .metrics-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
-  .metric-item { background: var(--surface2); border-radius: 8px; padding: 18px 12px; text-align: center; }
-  .metric-item-label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 7px; }
-  .metric-item-value { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 32px; line-height: 1; }
+  footer { text-align: center; padding: 16px; font-size: 11px; color: var(--text-tertiary); font-family: 'DM Mono', monospace; }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="logo-area">
-    <div class="logo-icon">JS</div>
-    <div class="logo-text">
-      <h1>Jackson Services</h1>
-      <p>Department Totals</p>
+<div id="loading-screen">
+  <div class="spinner"></div>
+  <div class="loading-text">Loading department data...</div>
+</div>
+
+<div id="dashboard">
+  <header>
+    <div class="logo">
+      <div class="logo-mark">JS</div>
+      <span class="logo-text">Jackson Services</span>
+      <span class="logo-sub">Department Totals</span>
     </div>
-  </div>
-  <div class="header-right">
-    <div class="last-updated" id="lastUpdated">Loading data...</div>
-    <div class="last-updated" style="opacity:0.5">Auto-refreshes hourly</div>
-    <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
-  </div>
-</header>
-
-<main>
-
-  <div id="loading" class="loading"><div class="spinner"></div> Loading Department Data...</div>
-  <div id="content" style="display:none">
-
-    <div class="section-label">Month-to-Date Summary</div>
-    <div class="stat-grid" id="dispatch-stats"></div>
-
-    <div class="section-label">Key Metrics by Division</div>
-    <div class="chart-card" style="margin-bottom:24px">
-      <div id="metrics-grid"></div>
+    <div class="header-right">
+      <span class="header-meta" id="lastUpdated"></span>
+      <span class="header-meta">Auto-refreshes hourly</span>
+      <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
     </div>
+  </header>
+
+  <div class="main">
+
+    <!-- KPI CARDS -->
+    <div class="kpi-grid" id="dispatch-stats"></div>
+
+    <!-- KEY METRICS BY DIVISION -->
+    <div class="card">
+      <div class="card-head"><span class="card-title">Key Metrics by Division</span></div>
+      <div class="metrics-wrap" id="metrics-grid"></div>
     </div>
 
-    <div class="section-label">Division Detail</div>
-    <div class="table-card">
-      <div class="table-header">Department Totals by Division</div>
-      <div class="table-scroll">
+    <!-- DIVISION TABLE -->
+    <div class="card">
+      <div class="card-head"><span class="card-title">Department Totals by Division</span></div>
+      <div class="table-wrap">
         <table>
           <thead><tr>
-            <th>Division</th><th>Canceled</th><th>Revenue</th><th>Weekly Pace</th><th>Monthly Pace</th><th>Yearly Pace</th><th>Crew Days</th>
+            <th>Division</th><th>Canceled</th><th>Revenue</th>
+            <th>Weekly Pace</th><th>Monthly Pace</th><th>Yearly Pace</th><th>Crew Days</th>
           </tr></thead>
           <tbody id="table-body"></tbody>
         </table>
@@ -133,12 +127,11 @@
     </div>
 
   </div>
-</main>
+  <footer>Jackson Services &nbsp;·&nbsp; Department Totals &nbsp;·&nbsp; Month to Date</footer>
+</div>
 
 <script>
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0NT7lEqqpwrkgoy6vcIuFkgmUA979edn_-ufgaxcbcIQsyho4vTVPGXlA9C1zXEGz-A3Ysy95y1xy/pub?gid=2025286502&single=true&output=csv';
-
-const ORANGE = '#F47B20', NAVY = '#1A6FC4';
 
 function fmt$(v) {
   const n = parseFloat(String(v).replace(/[$,%]/g,''));
@@ -147,16 +140,8 @@ function fmt$(v) {
 }
 function fmtPct(v) {
   const n = parseFloat(String(v).replace('%','').trim());
-  return isNaN(n) ? v : n.toFixed(2) + '%';
+  return isNaN(n) ? v : n.toFixed(1) + '%';
 }
-function pctBadge(v) {
-  const n = parseFloat(String(v).replace('%',''));
-  if (isNaN(n)) return `<span class="badge badge-orange">${v}</span>`;
-  if (n >= 70)  return `<span class="badge badge-green">${fmtPct(v)}</span>`;
-  if (n >= 50)  return `<span class="badge badge-yellow">${fmtPct(v)}</span>`;
-  return `<span class="badge badge-orange">${fmtPct(v)}</span>`;
-}
-function destroyChart(c) { if (c) c.destroy(); }
 
 async function fetchCSV(url) {
   try { const r = await fetch(url); if (r.ok) return await r.text(); } catch(e) {}
@@ -165,14 +150,12 @@ async function fetchCSV(url) {
 }
 
 async function loadData() {
-  document.getElementById('lastUpdated').textContent = 'Refreshing...';
   const csv = await fetchCSV(SHEET_URL);
-  if (!csv) {
-    document.getElementById('loading').innerHTML = '⚠️ Could not load department data. Check sheet sharing settings.';
-    return;
-  }
+  if (!csv) { document.getElementById('loading-screen').innerHTML = '<div style="color:#c0350d;font-size:13px">Could not load data. Check sheet sharing settings.</div>'; return; }
   renderDispatch(Papa.parse(csv, { header: true, skipEmptyLines: true }).data);
-  document.getElementById('lastUpdated').textContent = 'Updated: ' + new Date().toLocaleString();
+  document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  document.getElementById('loading-screen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
 }
 
 function renderDispatch(rows) {
@@ -185,57 +168,51 @@ function renderDispatch(rows) {
   const totalConverted = dataRows.reduce((s,r) => s + parseFloat(r['Converted Jobs']||0), 0);
   const totalCompleted = dataRows.reduce((s,r) => s + parseFloat(r['Completed Jobs']||0), 0);
   const totalCanceled  = dataRows.reduce((s,r) => s + parseFloat(r['Canceled Jobs']||0), 0);
-  const paceRow        = totalRow || dataRows[0] || {};
 
   document.getElementById('dispatch-stats').innerHTML = `
-    <div class="stat-card"><div class="stat-label">MTD Revenue</div><div class="stat-value orange">${fmt$(totalRevenue)}</div><div class="stat-sub">Completed jobs</div></div>
-    <div class="stat-card blue"><div class="stat-label">Total Opportunities</div><div class="stat-value">${totalOpps}</div><div class="stat-sub">This month</div></div>
-    <div class="stat-card green"><div class="stat-label">Converted Jobs</div><div class="stat-value green">${totalConverted}</div><div class="stat-sub">Of ${totalOpps} opportunities</div></div>
-    <div class="stat-card"><div class="stat-label">Completed Jobs</div><div class="stat-value">${totalCompleted}</div></div>
-    <div class="stat-card yellow"><div class="stat-label">Canceled Jobs</div><div class="stat-value">${totalCanceled}</div></div>
+    <div class="kpi orange"><div class="kpi-label">MTD Revenue</div><div class="kpi-val accent">${fmt$(totalRevenue)}</div><div class="kpi-sub">Completed jobs</div></div>
+    <div class="kpi blue"><div class="kpi-label">Total Opportunities</div><div class="kpi-val">${totalOpps}</div><div class="kpi-sub">This month</div></div>
+    <div class="kpi green"><div class="kpi-label">Converted Jobs</div><div class="kpi-val green">${totalConverted}</div><div class="kpi-sub">Of ${totalOpps} opportunities</div></div>
+    <div class="kpi"><div class="kpi-label">Completed Jobs</div><div class="kpi-val">${totalCompleted}</div><div class="kpi-sub">&nbsp;</div></div>
+    <div class="kpi"><div class="kpi-label">Canceled Jobs</div><div class="kpi-val" style="color:#c4460d">${totalCanceled}</div><div class="kpi-sub">&nbsp;</div></div>
   `;
-  // Build per-division metrics grid
-  const metricsHTML = dataRows.map(r => {
+
+  // Key metrics per division
+  document.getElementById('metrics-grid').innerHTML = dataRows.map(r => {
     const name = r['Name'].trim().replace('HVAC Residential:','').trim();
     const metrics = [
-      { label: 'WIP Jobs',      value: r['WIP Jobs']||'—',             color: '#F0F4F8' },
-      { label: 'Zero $ Jobs',   value: r['Zero Dollar Jobs']||'—',     color: '#F87171' },
-      { label: 'Recalls',       value: r['Recall Jobs']||'—',          color: '#FBBF24' },
-      { label: 'Returns',       value: r['Returns']||'—',              color: '#F87171' },
-      { label: 'Gross Margin',  value: r['Gross Margin %']||'—',       color: '#34D399' },
-      { label: 'Cost %',        value: r['Actual Costs as % of Sales']||'—', color: '#A78BFA' },
-      { label: 'No Charge',     value: r['No Charge Jobs']||'—',       color: '#8A9BB0' },
+      { label:'WIP Jobs',     value: r['WIP Jobs']||'—',                      color:'#1a1815' },
+      { label:'Zero $ Jobs',  value: r['Zero Dollar Jobs']||'—',              color:'#c4460d' },
+      { label:'Recalls',      value: r['Recall Jobs']||'—',                   color:'#a06010' },
+      { label:'Returns',      value: r['Returns']||'—',                       color:'#c4460d' },
+      { label:'Gross Margin', value: r['Gross Margin %']||'—',                color:'#1a7a57' },
+      { label:'Cost %',       value: r['Actual Costs as % of Sales']||'—',    color:'#5b4fcf' },
+      { label:'No Charge',    value: r['No Charge Jobs']||'—',                color:'#6b6760' },
     ];
-    const items = metrics.map(m => `
-      <div class="metric-item">
-        <div class="metric-item-label">${m.label}</div>
-        <div class="metric-item-value" style="color:${m.color}">${m.value}</div>
-      </div>`).join('');
     return `<div class="metrics-division">
       <div class="metrics-div-name">${name}</div>
-      <div class="metrics-row" style="grid-template-columns:repeat(7,1fr)">${items}</div>
+      <div class="metrics-row">
+        ${metrics.map(m => `<div class="metric-item">
+          <div class="metric-item-label">${m.label}</div>
+          <div class="metric-item-value" style="color:${m.color}">${m.value}</div>
+        </div>`).join('')}
+      </div>
     </div>`;
   }).join('');
-  document.getElementById('metrics-grid').innerHTML = metricsHTML;
 
   document.getElementById('table-body').innerHTML = dataRows.map(r => `
     <tr>
       <td class="name-cell">${r['Name'].trim()}</td>
-      <td style="color:var(--warning)">${r['Canceled Jobs']||'-'}</td>
-      <td style="color:var(--orange);font-weight:500">${fmt$(r['Completed Revenue'])}</td>
+      <td style="color:#c4460d;font-weight:500">${r['Canceled Jobs']||'-'}</td>
+      <td style="font-weight:600;color:var(--accent)">${fmt$(r['Completed Revenue'])}</td>
       <td>${fmt$(r['Current Weekly Pace'])}</td>
       <td>${fmt$(r['Current Monthly Pace'])}</td>
       <td>${fmt$(r['Current Yearly Pace'])}</td>
       <td>${r['Crew Days']||'—'}</td>
     </tr>`).join('');
-
-  document.getElementById('loading').style.display = 'none';
-  document.getElementById('content').style.display = 'block';
 }
 
 loadData();
-
-// Auto-refresh every hour
 setInterval(loadData, 60 * 60 * 1000);
 </script>
 </body>
