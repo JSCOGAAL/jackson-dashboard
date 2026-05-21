@@ -4,19 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Jackson Services — Sales Rep Performance</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #f4f2ee; --surface: #ffffff; --surface2: #f9f8f6;
-    --border: rgba(0,0,0,0.08); --border-strong: rgba(0,0,0,0.14);
-    --text: #1a1815; --text-secondary: #6b6760; --text-tertiary: #a09d98;
-    --accent: #d4500a; --success: #1a7a57; --warning: #c4460d;
+    --bg: #111827; --surface: #1E2A3B; --surface2: #253347;
+    --border: rgba(255,255,255,0.07); --border-strong: rgba(255,255,255,0.15);
+    --text: #F0F4F8; --text-secondary: #8A9BB0; --text-tertiary: #5A6B80;
+    --accent: #F47B20; --success: #34D399; --warning: #FBBF24;
     --radius: 10px; --radius-sm: 6px;
   }
-  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; line-height: 1.5; }
+  body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; line-height: 1.5; }
 
   #loading-screen { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999; gap: 16px; }
   .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
@@ -25,15 +25,15 @@
 
   #dashboard { display: none; }
 
-  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 52px; position: sticky; top: 0; z-index: 100; }
+  header { background: linear-gradient(135deg, #1A2B4A 0%, #243660 100%); border-bottom: 3px solid var(--accent); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 52px; position: sticky; top: 0; z-index: 100; }
   .logo { display: flex; align-items: center; gap: 10px; }
   .logo-mark { width: 28px; height: 28px; background: var(--accent); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 11px; }
   .logo-text { font-size: 14px; font-weight: 600; letter-spacing: -0.3px; }
   .logo-sub { font-size: 11px; color: var(--text-secondary); margin-left: 6px; }
   .header-right { display: flex; align-items: center; gap: 12px; }
-  .header-meta { font-size: 11px; color: var(--text-tertiary); font-family: 'DM Mono', monospace; }
-  .refresh-btn { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500; padding: 5px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); background: var(--surface2); color: var(--text-secondary); cursor: pointer; }
-  .refresh-btn:hover { color: var(--text); border-color: var(--accent); }
+  .header-meta { font-size: 11px; color: var(--text-tertiary); font-family: 'Barlow', sans-serif; }
+  .refresh-btn { font-family: 'Barlow', sans-serif; font-size: 11px; font-weight: 500; padding: 5px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); background: var(--surface2); color: var(--text-secondary); cursor: pointer; }
+  .refresh-btn:hover { background: #FF9A45; }
 
   .main { padding: 20px 24px; }
 
@@ -49,7 +49,7 @@
   .goal-pct { font-size: 26px; font-weight: 600; letter-spacing: -1px; line-height: 1; }
   .progress-track { height: 22px; background: var(--surface2); border-radius: 6px; overflow: hidden; border: 1px solid var(--border); }
   .progress-fill { height: 100%; border-radius: 6px; display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; font-size: 12px; font-weight: 600; color: white; transition: width 1s cubic-bezier(0.4,0,0.2,1); min-width: 50px; }
-  .goal-meta-row { display: flex; justify-content: space-between; margin-top: 5px; font-size: 11px; color: var(--text-tertiary); font-family: 'DM Mono', monospace; }
+  .goal-meta-row { display: flex; justify-content: space-between; margin-top: 5px; font-size: 11px; color: var(--text-tertiary); font-family: 'Barlow', sans-serif; }
 
   /* KPI GRID */
   .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 14px; }
@@ -76,15 +76,15 @@
   thead th { padding: 8px 12px; text-align: left; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-secondary); border-bottom: 1px solid var(--border); white-space: nowrap; background: var(--surface2); }
   td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
   tr:last-child td { border-bottom: none; }
-  tbody tr:hover td { background: #faf9f7; }
+  tbody tr:hover td { background: var(--surface2); }
   td.name-cell { font-weight: 600; font-size: 13px; }
 
   .badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-  .badge-green  { background: #e5f5ee; color: var(--success); }
-  .badge-orange { background: #fdf0ea; color: var(--accent); }
-  .badge-yellow { background: #fdf6e3; color: #a06010; }
+  .badge-green  { background: rgba(52,211,153,0.15); color: var(--success); }
+  .badge-orange { background: rgba(244,123,32,0.15); color: var(--accent); }
+  .badge-yellow { background: rgba(251,191,36,0.15); color: var(--warning); }
 
-  footer { text-align: center; padding: 16px; font-size: 11px; color: var(--text-tertiary); font-family: 'DM Mono', monospace; }
+  footer { text-align: center; padding: 16px; font-size: 11px; color: var(--text-tertiary); font-family: 'Barlow', sans-serif; }
 </style>
 </head>
 <body>
@@ -278,8 +278,8 @@ function chartOpts(prefix) {
     responsive:true, maintainAspectRatio:false,
     plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label: ctx => prefix==='$' ? ' '+fmt$(ctx.raw) : ' '+ctx.raw.toFixed(1)+'%' }}},
     scales:{
-      x:{ grid:{ display:false }, ticks:{ color:'#a09d98', font:{ size:11, family:'DM Sans' } } },
-      y:{ grid:{ color:'rgba(0,0,0,0.05)' }, ticks:{ color:'#a09d98', font:{ size:11, family:'DM Sans' },
+      x:{ grid:{ display:false }, ticks:{ color:'#8A9BB0', font:{ size:11, family:'DM Sans' } } },
+      y:{ grid:{ color:'rgba(255,255,255,0.05)' }, ticks:{ color:'#8A9BB0', font:{ size:11, family:'DM Sans' },
         callback: v => prefix==='$' ? '$'+(v/1000).toFixed(0)+'k' : v+'%'
       }}
     }
