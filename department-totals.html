@@ -4,18 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Jackson Services — Department Totals</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #f4f2ee; --surface: #ffffff; --surface2: #f9f8f6;
-    --border: rgba(0,0,0,0.08); --border-strong: rgba(0,0,0,0.14);
-    --text: #1a1815; --text-secondary: #6b6760; --text-tertiary: #a09d98;
-    --accent: #d4500a; --success: #1a7a57; --warning: #c4460d;
+    --bg: #111827; --surface: #1E2A3B; --surface2: #253347;
+    --border: rgba(255,255,255,0.07); --border-strong: rgba(255,255,255,0.15);
+    --text: #F0F4F8; --text-secondary: #8A9BB0; --text-tertiary: #5A6B80;
+    --accent: #F47B20; --success: #34D399; --warning: #FBBF24;
     --radius: 10px; --radius-sm: 6px;
   }
-  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; line-height: 1.5; }
+  body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; line-height: 1.5; }
 
   #loading-screen { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999; gap: 16px; }
   .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
@@ -24,15 +24,15 @@
 
   #dashboard { display: none; }
 
-  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 52px; position: sticky; top: 0; z-index: 100; }
+  header { background: linear-gradient(135deg, #1A2B4A 0%, #243660 100%); border-bottom: 3px solid var(--accent); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 52px; position: sticky; top: 0; z-index: 100; }
   .logo { display: flex; align-items: center; gap: 10px; }
   .logo-mark { width: 28px; height: 28px; background: var(--accent); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 11px; }
   .logo-text { font-size: 14px; font-weight: 600; letter-spacing: -0.3px; }
   .logo-sub { font-size: 11px; color: var(--text-secondary); margin-left: 6px; }
   .header-right { display: flex; align-items: center; gap: 12px; }
-  .header-meta { font-size: 11px; color: var(--text-tertiary); font-family: 'DM Mono', monospace; }
-  .refresh-btn { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500; padding: 5px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); background: var(--surface2); color: var(--text-secondary); cursor: pointer; }
-  .refresh-btn:hover { color: var(--text); border-color: var(--accent); }
+  .header-meta { font-size: 11px; color: var(--text-tertiary); font-family: 'Barlow', sans-serif; }
+  .refresh-btn { font-family: 'Barlow', sans-serif; font-size: 11px; font-weight: 500; padding: 5px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); background: var(--surface2); color: var(--text-secondary); cursor: pointer; }
+  .refresh-btn:hover { background: #FF9A45; }
 
   .main { padding: 20px 24px; }
 
@@ -42,7 +42,7 @@
   .kpi::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--accent); opacity: 0.35; }
   .kpi.green::before  { background: var(--success); opacity: 1; }
   .kpi.orange::before { background: var(--accent); opacity: 1; }
-  .kpi.blue::before   { background: #1a5fa8; opacity: 1; }
+  .kpi.blue::before   { background: #1A6FC4; opacity: 1; }
   .kpi-label { font-size: 10px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
   .kpi-val { font-size: 24px; font-weight: 600; letter-spacing: -0.8px; color: var(--text); line-height: 1; margin-bottom: 3px; }
   .kpi-val.accent { color: var(--accent); }
@@ -69,15 +69,15 @@
   thead th { padding: 8px 12px; text-align: left; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-secondary); border-bottom: 1px solid var(--border); white-space: nowrap; background: var(--surface2); }
   td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
   tr:last-child td { border-bottom: none; }
-  tbody tr:hover td { background: #faf9f7; }
+  tbody tr:hover td { background: var(--surface2); }
   td.name-cell { font-weight: 600; font-size: 13px; }
 
   .badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-  .badge-green  { background: #e5f5ee; color: var(--success); }
-  .badge-orange { background: #fdf0ea; color: var(--accent); }
-  .badge-yellow { background: #fdf6e3; color: #a06010; }
+  .badge-green  { background: rgba(52,211,153,0.15); color: var(--success); }
+  .badge-orange { background: rgba(244,123,32,0.15); color: var(--accent); }
+  .badge-yellow { background: rgba(251,191,36,0.15); color: var(--warning); }
 
-  footer { text-align: center; padding: 16px; font-size: 11px; color: var(--text-tertiary); font-family: 'DM Mono', monospace; }
+  footer { text-align: center; padding: 16px; font-size: 11px; color: var(--text-tertiary); font-family: 'Barlow', sans-serif; }
 </style>
 </head>
 <body>
@@ -174,20 +174,20 @@ function renderDispatch(rows) {
     <div class="kpi blue"><div class="kpi-label">Total Opportunities</div><div class="kpi-val">${totalOpps}</div><div class="kpi-sub">This month</div></div>
     <div class="kpi green"><div class="kpi-label">Converted Jobs</div><div class="kpi-val green">${totalConverted}</div><div class="kpi-sub">Of ${totalOpps} opportunities</div></div>
     <div class="kpi"><div class="kpi-label">Completed Jobs</div><div class="kpi-val">${totalCompleted}</div><div class="kpi-sub">&nbsp;</div></div>
-    <div class="kpi"><div class="kpi-label">Canceled Jobs</div><div class="kpi-val" style="color:#c4460d">${totalCanceled}</div><div class="kpi-sub">&nbsp;</div></div>
+    <div class="kpi"><div class="kpi-label">Canceled Jobs</div><div class="kpi-val" style="color:var(--warning)">${totalCanceled}</div><div class="kpi-sub">&nbsp;</div></div>
   `;
 
   // Key metrics per division
   document.getElementById('metrics-grid').innerHTML = dataRows.map(r => {
     const name = r['Name'].trim().replace('HVAC Residential:','').trim();
     const metrics = [
-      { label:'WIP Jobs',     value: r['WIP Jobs']||'—',                      color:'#1a1815' },
-      { label:'Zero $ Jobs',  value: r['Zero Dollar Jobs']||'—',              color:'#c4460d' },
-      { label:'Recalls',      value: r['Recall Jobs']||'—',                   color:'#a06010' },
-      { label:'Returns',      value: r['Returns']||'—',                       color:'#c4460d' },
-      { label:'Gross Margin', value: r['Gross Margin %']||'—',                color:'#1a7a57' },
-      { label:'Cost %',       value: r['Actual Costs as % of Sales']||'—',    color:'#5b4fcf' },
-      { label:'No Charge',    value: r['No Charge Jobs']||'—',                color:'#6b6760' },
+      { label:'WIP Jobs',     value: r['WIP Jobs']||'—',                      color:'var(--text)' },
+      { label:'Zero $ Jobs',  value: r['Zero Dollar Jobs']||'—',              color:'var(--warning)' },
+      { label:'Recalls',      value: r['Recall Jobs']||'—',                   color:'var(--warning)' },
+      { label:'Returns',      value: r['Returns']||'—',                       color:'var(--warning)' },
+      { label:'Gross Margin', value: r['Gross Margin %']||'—',                color:'var(--success)' },
+      { label:'Cost %',       value: r['Actual Costs as % of Sales']||'—',    color:'#A78BFA' },
+      { label:'No Charge',    value: r['No Charge Jobs']||'—',                color:'var(--text-secondary)' },
     ];
     return `<div class="metrics-division">
       <div class="metrics-div-name">${name}</div>
@@ -203,7 +203,7 @@ function renderDispatch(rows) {
   document.getElementById('table-body').innerHTML = dataRows.map(r => `
     <tr>
       <td class="name-cell">${r['Name'].trim()}</td>
-      <td style="color:#c4460d;font-weight:500">${r['Canceled Jobs']||'-'}</td>
+      <td style="color:var(--warning);font-weight:500">${r['Canceled Jobs']||'-'}</td>
       <td style="font-weight:600;color:var(--accent)">${fmt$(r['Completed Revenue'])}</td>
       <td>${fmt$(r['Current Weekly Pace'])}</td>
       <td>${fmt$(r['Current Monthly Pace'])}</td>
