@@ -4,157 +4,157 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Jackson Services — Sales Rep Performance</title>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --orange: #F47B20; --orange-light: #FF9A45;
-    --navy: #1A2B4A; --navy-light: #243660; --navy-chart: #1A6FC4;
-    --bg: #111827; --surface: #1E2A3B; --surface2: #253347;
-    --text: #F0F4F8; --muted: #8A9BB0; --border: rgba(255,255,255,0.07);
-    --success: #34D399; --warning: #FBBF24; --danger: #F87171;
+    --bg: #f4f2ee; --surface: #ffffff; --surface2: #f9f8f6;
+    --border: rgba(0,0,0,0.08); --border-strong: rgba(0,0,0,0.14);
+    --text: #1a1815; --text-secondary: #6b6760; --text-tertiary: #a09d98;
+    --accent: #d4500a; --success: #1a7a57; --warning: #c4460d;
+    --radius: 10px; --radius-sm: 6px;
   }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; font-weight: 300; min-height: 100vh; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; line-height: 1.5; }
 
-  header {
-    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
-    border-bottom: 3px solid var(--orange);
-    padding: 18px 32px; display: flex; align-items: center; justify-content: space-between;
-    position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 24px rgba(0,0,0,0.5);
-  }
-  .logo-area { display: flex; align-items: center; gap: 14px; }
-  .logo-icon { width: 42px; height: 42px; background: var(--orange); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 19px; color: white; letter-spacing: -1px; }
-  .logo-text h1 { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 21px; letter-spacing: 1px; text-transform: uppercase; line-height: 1; }
-  .logo-text p  { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-top: 3px; }
-  .header-right { display: flex; align-items: center; gap: 16px; }
-  .last-updated { font-size: 11px; color: var(--muted); text-align: right; }
-  .refresh-btn { background: var(--orange); color: white; border: none; padding: 8px 18px; border-radius: 6px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
-  .refresh-btn:hover { background: var(--orange-light); }
+  #loading-screen { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999; gap: 16px; }
+  .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 13px; color: var(--text-secondary); }
 
-  main { padding: 32px; max-width: 100%; margin: 0; }
+  #dashboard { display: none; }
 
-  .section-label { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; text-transform: uppercase; letter-spacing: 3px; color: var(--orange); margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
-  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 52px; position: sticky; top: 0; z-index: 100; }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-mark { width: 28px; height: 28px; background: var(--accent); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 11px; }
+  .logo-text { font-size: 14px; font-weight: 600; letter-spacing: -0.3px; }
+  .logo-sub { font-size: 11px; color: var(--text-secondary); margin-left: 6px; }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .header-meta { font-size: 11px; color: var(--text-tertiary); font-family: 'DM Mono', monospace; }
+  .refresh-btn { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500; padding: 5px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); background: var(--surface2); color: var(--text-secondary); cursor: pointer; }
+  .refresh-btn:hover { color: var(--text); border-color: var(--accent); }
 
-  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); gap: 14px; margin-bottom: 24px; }
-  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 24px; position: relative; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; animation: fadeUp 0.4s ease both; }
-  .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
-  .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--orange); }
-  .stat-card.green::before  { background: var(--success); }
-  .stat-card.yellow::before { background: var(--warning); }
-  .stat-card.blue::before   { background: var(--navy-chart); }
-  .stat-label { font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 9px; }
-  .stat-value { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 48px; line-height: 1; color: var(--text); }
-  .stat-value.orange { color: var(--orange); }
-  .stat-value.green  { color: var(--success); }
-  .stat-sub { font-size: 14px; color: var(--muted); margin-top: 7px; }
+  .main { padding: 20px 24px; }
 
-  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 24px; }
-  @media (max-width: 800px) { .charts-row { grid-template-columns: 1fr; } }
-  .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; animation: fadeUp 0.4s ease both; }
-  .chart-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; color: var(--text); }
-  .chart-wrap { position: relative; height: 220px; }
-
-  .table-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 24px; animation: fadeUp 0.4s ease both; }
-  .table-header { padding: 14px 18px; border-bottom: 1px solid var(--border); font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
-  .table-scroll { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 16px; }
-  thead tr { background: var(--surface2); }
-  th { padding: 12px 16px; text-align: left; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); white-space: nowrap; }
-  tbody tr { border-top: 1px solid var(--border); transition: background 0.15s; }
-  tbody tr:hover { background: var(--surface2); }
-  td { padding: 14px 16px; white-space: nowrap; }
-  td.name-cell { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 20px; color: var(--text); }
-
-  .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.5px; }
-  .badge-green  { background: rgba(52,211,153,0.15); color: var(--success); }
-  .badge-orange { background: rgba(244,123,32,0.15); color: var(--orange); }
-  .badge-yellow { background: rgba(251,191,36,0.15); color: var(--warning); }
-
-  .loading { display: flex; align-items: center; justify-content: center; padding: 60px; color: var(--muted); font-family: 'Barlow Condensed', sans-serif; font-size: 16px; letter-spacing: 2px; text-transform: uppercase; gap: 12px; }
-  .spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--orange); border-radius: 50%; animation: spin 0.8s linear infinite; }
-
-  @keyframes spin   { to { transform: rotate(360deg); } }
-  @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-
-  .goal-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 24px; position: relative; overflow: hidden; margin-bottom: 24px; animation: fadeUp 0.4s ease both; }
+  /* GOAL CARD */
+  .goal-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 14px; position: relative; overflow: hidden; }
   .goal-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--success); }
-  .goal-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 14px; }
-  .goal-label { font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 6px; }
-  .goal-amount { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 48px; line-height: 1; }
-  .progress-track { height: 36px; background: var(--surface2); border-radius: 8px; overflow: hidden; }
-  .progress-fill { height: 100%; border-radius: 8px; display: flex; align-items: center; justify-content: flex-end; padding-right: 14px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 16px; color: white; transition: width 1s cubic-bezier(0.4,0,0.2,1); min-width: 70px; }
-  .goal-meta { display: flex; justify-content: space-between; margin-top: 8px; font-size: 14px; color: var(--muted); }
+  .goal-top { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; }
+  .goal-block { }
+  .goal-label { font-size: 10px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 3px; }
+  .goal-val { font-size: 26px; font-weight: 600; letter-spacing: -1px; line-height: 1; }
+  .goal-val.accent { color: var(--accent); }
+  .goal-val.muted { color: var(--text-tertiary); }
+  .goal-pct { font-size: 26px; font-weight: 600; letter-spacing: -1px; line-height: 1; }
+  .progress-track { height: 22px; background: var(--surface2); border-radius: 6px; overflow: hidden; border: 1px solid var(--border); }
+  .progress-fill { height: 100%; border-radius: 6px; display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; font-size: 12px; font-weight: 600; color: white; transition: width 1s cubic-bezier(0.4,0,0.2,1); min-width: 50px; }
+  .goal-meta-row { display: flex; justify-content: space-between; margin-top: 5px; font-size: 11px; color: var(--text-tertiary); font-family: 'DM Mono', monospace; }
+
+  /* KPI GRID */
+  .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 14px; }
+  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; position: relative; overflow: hidden; }
+  .kpi::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--accent); opacity: 0.35; }
+  .kpi.green::before { background: var(--success); opacity: 1; }
+  .kpi.orange::before { background: var(--accent); opacity: 1; }
+  .kpi-label { font-size: 10px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
+  .kpi-val { font-size: 24px; font-weight: 600; letter-spacing: -0.8px; color: var(--text); line-height: 1; margin-bottom: 3px; }
+  .kpi-val.accent { color: var(--accent); }
+  .kpi-val.green { color: var(--success); }
+  .kpi-sub { font-size: 11px; color: var(--text-tertiary); }
+
+  /* CHARTS ROW */
+  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .card-head { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  .card-title { font-size: 12px; font-weight: 600; letter-spacing: -0.2px; color: var(--text); }
+  .chart-pad { padding: 12px 16px; }
+
+  /* TABLE */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  thead th { padding: 8px 12px; text-align: left; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-secondary); border-bottom: 1px solid var(--border); white-space: nowrap; background: var(--surface2); }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: #faf9f7; }
+  td.name-cell { font-weight: 600; font-size: 13px; }
+
+  .badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .badge-green  { background: #e5f5ee; color: var(--success); }
+  .badge-orange { background: #fdf0ea; color: var(--accent); }
+  .badge-yellow { background: #fdf6e3; color: #a06010; }
+
+  footer { text-align: center; padding: 16px; font-size: 11px; color: var(--text-tertiary); font-family: 'DM Mono', monospace; }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="logo-area">
-    <div class="logo-icon">JS</div>
-    <div class="logo-text">
-      <h1>Jackson Services</h1>
-      <p>Sales Rep Performance</p>
+<div id="loading-screen">
+  <div class="spinner"></div>
+  <div class="loading-text">Loading sales data...</div>
+</div>
+
+<div id="dashboard">
+  <header>
+    <div class="logo">
+      <div class="logo-mark">JS</div>
+      <span class="logo-text">Jackson Services</span>
+      <span class="logo-sub">Sales Rep Performance</span>
     </div>
-  </div>
-  <div class="header-right">
-    <div class="last-updated" id="lastUpdated">Loading data...</div>
-    <div class="last-updated" style="opacity:0.5">Auto-refreshes hourly</div>
-    <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
-  </div>
-</header>
+    <div class="header-right">
+      <span class="header-meta" id="lastUpdated"></span>
+      <span class="header-meta">Auto-refreshes hourly</span>
+      <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+    </div>
+  </header>
 
-<main>
+  <div class="main">
 
-  <div id="loading" class="loading"><div class="spinner"></div> Loading Sales Data...</div>
-  <div id="content" style="display:none">
-
-    <div class="section-label">Monthly Goal Progress</div>
+    <!-- GOAL PROGRESS -->
     <div class="goal-card">
-      <div class="goal-row">
-        <div>
+      <div class="goal-top">
+        <div class="goal-block">
           <div class="goal-label">Total Team Sales</div>
-          <div class="goal-amount orange" id="goal-actual">—</div>
+          <div class="goal-val accent" id="goal-actual">—</div>
         </div>
-        <div style="text-align:center">
-          <div class="goal-label">Progress</div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:48px;line-height:1" id="goal-pct">—</div>
+        <div class="goal-block" style="text-align:center">
+          <div class="goal-label">Progress to Goal</div>
+          <div class="goal-pct" id="goal-pct">—</div>
         </div>
-        <div style="text-align:right">
+        <div class="goal-block" style="text-align:right">
           <div class="goal-label">Monthly Goal</div>
-          <div class="goal-amount" style="color:var(--muted)" id="goal-display">—</div>
+          <div class="goal-val muted">$675,000</div>
         </div>
       </div>
       <div class="progress-track">
         <div class="progress-fill" id="goal-bar" style="width:0%"></div>
       </div>
-      <div class="goal-meta">
+      <div class="goal-meta-row">
         <span>$0</span>
         <span id="goal-remaining"></span>
-        <span id="goal-display-end">—</span>
+        <span>$675,000</span>
       </div>
     </div>
 
-    <div class="section-label">Team Totals</div>
-    <div class="stat-grid" id="team-stats"></div>
+    <!-- KPI CARDS -->
+    <div class="kpi-grid" id="team-stats"></div>
 
+    <!-- CHARTS -->
     <div class="charts-row">
-      <div class="chart-card">
-        <div class="chart-title">Total Sales by Rep</div>
-        <div class="chart-wrap"><canvas id="salesChart"></canvas></div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">Total Sales by Rep</span></div>
+        <div class="chart-pad"><div style="position:relative;height:180px"><canvas id="salesChart"></canvas></div></div>
       </div>
-      <div class="chart-card">
-        <div class="chart-title">Close Rate by Rep</div>
-        <div class="chart-wrap"><canvas id="closeRateChart"></canvas></div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">Close Rate by Rep</span></div>
+        <div class="chart-pad"><div style="position:relative;height:180px"><canvas id="closeRateChart"></canvas></div></div>
       </div>
     </div>
 
-    <div class="section-label">Rep Detail</div>
-    <div class="table-card">
-      <div class="table-header">Individual Rep Performance</div>
-      <div class="table-scroll">
+    <!-- TABLE -->
+    <div class="card">
+      <div class="card-head"><span class="card-title">Individual Rep Performance</span></div>
+      <div class="table-wrap">
         <table>
           <thead><tr>
             <th>Rep</th><th>Total Sales</th><th>Opportunities</th><th>Close Rate</th>
@@ -167,23 +167,14 @@
     </div>
 
   </div>
-</main>
+  <footer>Jackson Services &nbsp;·&nbsp; Sales Rep Performance &nbsp;·&nbsp; Month to Date</footer>
+</div>
 
 <script>
-/* ══════════════════════════════════════════
-   CONFIG — update MONTHLY_GOAL each month
-   This is the ONLY place you need to change.
-══════════════════════════════════════════ */
-const MONTHLY_GOAL = 750000;
-
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0NT7lEqqpwrkgoy6vcIuFkgmUA979edn_-ufgaxcbcIQsyho4vTVPGXlA9C1zXEGz-A3Ysy95y1xy/pub?gid=0&single=true&output=csv';
+const GOAL = 675000;
 let salesChart, closeRateChart;
-const COLORS = ['#F47B20','#1A6FC4','#34D399','#FBBF24','#A78BFA','#F87171'];
-
-// Format goal as $XXX,XXX (no decimals) for the static displays
-const goalDisplay = '$' + MONTHLY_GOAL.toLocaleString('en-US');
-document.getElementById('goal-display').textContent = goalDisplay;
-document.getElementById('goal-display-end').textContent = goalDisplay;
+const COLORS = ['#d4500a','#1a5fa8','#1a7a57','#a06010','#5b4fcf','#a0304a'];
 
 function fmt$(v) {
   const n = parseFloat(String(v).replace(/[$,%]/g,''));
@@ -192,7 +183,7 @@ function fmt$(v) {
 }
 function fmtPct(v) {
   const n = parseFloat(String(v).replace('%','').trim());
-  return isNaN(n) ? v : n.toFixed(2) + '%';
+  return isNaN(n) ? v : n.toFixed(1) + '%';
 }
 function pctBadge(v) {
   const n = parseFloat(String(v).replace('%',''));
@@ -210,14 +201,13 @@ async function fetchCSV(url) {
 }
 
 async function loadData() {
-  document.getElementById('lastUpdated').textContent = 'Refreshing...';
+  document.getElementById('lastUpdated').textContent = '';
   const csv = await fetchCSV(SHEET_URL);
-  if (!csv) {
-    document.getElementById('loading').innerHTML = '⚠️ Could not load sales data. Check sheet sharing settings.';
-    return;
-  }
+  if (!csv) { document.getElementById('loading-screen').innerHTML = '<div style="color:#c0350d;font-size:13px">Could not load data. Check sheet sharing settings.</div>'; return; }
   renderSales(Papa.parse(csv, { header: true, skipEmptyLines: true }).data);
-  document.getElementById('lastUpdated').textContent = 'Updated: ' + new Date().toLocaleString();
+  document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  document.getElementById('loading-screen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
 }
 
 function renderSales(rows) {
@@ -230,10 +220,11 @@ function renderSales(rows) {
   const avgSale       = totalClosed > 0 ? totalSales/totalClosed : 0;
   const totalWIP      = reps.reduce((s,r) => s + parseFloat(r['WIP Jobs']||0), 0);
 
-  const pct = Math.min((totalSales / MONTHLY_GOAL) * 100, 100);
-  const remaining = MONTHLY_GOAL - totalSales;
-  const barColor = pct >= 100 ? 'var(--success)' : pct >= 75 ? 'var(--orange)' : 'var(--navy-chart)';
-  const pctColor = pct >= 100 ? 'var(--success)' : pct >= 75 ? 'var(--orange)' : 'var(--danger)';
+  // Goal progress
+  const pct = Math.min((totalSales / GOAL) * 100, 100);
+  const remaining = GOAL - totalSales;
+  const barColor = pct >= 100 ? '#1a7a57' : pct >= 75 ? '#d4500a' : '#1a5fa8';
+  const pctColor = pct >= 100 ? '#1a7a57' : pct >= 75 ? '#d4500a' : '#c4460d';
   document.getElementById('goal-actual').textContent = fmt$(totalSales);
   document.getElementById('goal-pct').textContent = pct.toFixed(1) + '%';
   document.getElementById('goal-pct').style.color = pctColor;
@@ -242,34 +233,35 @@ function renderSales(rows) {
   document.getElementById('goal-bar').textContent = pct.toFixed(1) + '%';
   document.getElementById('goal-remaining').textContent = remaining > 0 ? fmt$(remaining) + ' to go' : '🎉 Goal reached!';
 
+  // KPI cards
   document.getElementById('team-stats').innerHTML = `
-    <div class="stat-card"><div class="stat-label">Total Team Sales</div><div class="stat-value orange">${fmt$(totalSales)}</div><div class="stat-sub">${totalClosed} closed deals</div></div>
-    <div class="stat-card green"><div class="stat-label">Team Close Rate</div><div class="stat-value green">${teamCloseRate}%</div><div class="stat-sub">${totalClosed} of ${totalOpps} opps</div></div>
-    <div class="stat-card"><div class="stat-label">Avg Closed Sale</div><div class="stat-value">${fmt$(avgSale)}</div><div class="stat-sub">Per closed deal</div></div>
-    <div class="stat-card yellow"><div class="stat-label">WIP Jobs</div><div class="stat-value">${totalWIP}</div><div class="stat-sub">In progress</div></div>
-    <div class="stat-card blue"><div class="stat-label">Active Reps</div><div class="stat-value">${reps.length}</div><div class="stat-sub">Tracked this period</div></div>
+    <div class="kpi orange"><div class="kpi-label">Total Sales</div><div class="kpi-val accent">${fmt$(totalSales)}</div><div class="kpi-sub">${totalClosed} closed deals</div></div>
+    <div class="kpi green"><div class="kpi-label">Team Close Rate</div><div class="kpi-val green">${teamCloseRate}%</div><div class="kpi-sub">${totalClosed} of ${totalOpps} opps</div></div>
+    <div class="kpi"><div class="kpi-label">Avg Closed Sale</div><div class="kpi-val">${fmt$(avgSale)}</div><div class="kpi-sub">Per closed deal</div></div>
+    <div class="kpi"><div class="kpi-label">WIP Jobs</div><div class="kpi-val">${totalWIP}</div><div class="kpi-sub">In progress</div></div>
+    <div class="kpi"><div class="kpi-label">Active Reps</div><div class="kpi-val">${reps.length}</div><div class="kpi-sub">Tracked this period</div></div>
   `;
 
-  const names      = reps.map(r => r['Name'].trim());
+  const names      = reps.map(r => r['Name'].trim().split(' ')[0]);
   const sales      = reps.map(r => parseFloat(String(r['Total Sales']||'0').replace(/[$,]/g,'')));
   const closeRates = reps.map(r => parseFloat(String(r['Close Rate']||'0').replace('%','')));
 
   destroyChart(salesChart);
   salesChart = new Chart(document.getElementById('salesChart'), {
-    type:'bar', data:{ labels:names, datasets:[{ data:sales, backgroundColor:COLORS.slice(0,names.length), borderRadius:6 }] },
-    options: chartOpts('$', false)
+    type:'bar', data:{ labels:names, datasets:[{ data:sales, backgroundColor:COLORS, borderRadius:4 }] },
+    options: chartOpts('$')
   });
 
   destroyChart(closeRateChart);
   closeRateChart = new Chart(document.getElementById('closeRateChart'), {
-    type:'bar', data:{ labels:names, datasets:[{ data:closeRates, backgroundColor:COLORS.slice(0,names.length), borderRadius:6 }] },
-    options: chartOpts('%', false)
+    type:'bar', data:{ labels:names, datasets:[{ data:closeRates, backgroundColor:COLORS, borderRadius:4 }] },
+    options: chartOpts('%')
   });
 
   document.getElementById('table-body').innerHTML = reps.map(r => `
     <tr>
       <td class="name-cell">${r['Name'].trim()}</td>
-      <td style="color:var(--orange);font-weight:500">${fmt$(r['Total Sales'])}</td>
+      <td style="font-weight:600;color:var(--accent)">${fmt$(r['Total Sales'])}</td>
       <td>${r['Sales Opportunity']||'-'}</td>
       <td>${pctBadge(r['Close Rate'])}</td>
       <td>${fmt$(r['Closed Average Sale'])}</td>
@@ -279,32 +271,22 @@ function renderSales(rows) {
       <td>${pctBadge(r['Close Rate from Marketing Leads'])}</td>
       <td>${r['WIP Jobs']||'-'}</td>
     </tr>`).join('');
-
-  document.getElementById('loading').style.display = 'none';
-  document.getElementById('content').style.display = 'block';
 }
 
-function chartOpts(prefix, stacked) {
+function chartOpts(prefix) {
   return {
     responsive:true, maintainAspectRatio:false,
-    plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label: ctx => {
-      const v = ctx.raw;
-      if (prefix==='$') return ' '+fmt$(v);
-      if (prefix==='%') return ' '+v.toFixed(1)+'%';
-      return ' '+v;
-    }}}},
+    plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label: ctx => prefix==='$' ? ' '+fmt$(ctx.raw) : ' '+ctx.raw.toFixed(1)+'%' }}},
     scales:{
-      x:{ stacked, grid:{ color:'rgba(255,255,255,0.04)' }, ticks:{ color:'#8A9BB0', font:{ family:'Barlow' } } },
-      y:{ stacked, grid:{ color:'rgba(255,255,255,0.04)' }, ticks:{ color:'#8A9BB0', font:{ family:'Barlow' },
-        callback: v => prefix==='$' ? '$'+v.toLocaleString() : prefix==='%' ? v+'%' : v
+      x:{ grid:{ display:false }, ticks:{ color:'#a09d98', font:{ size:11, family:'DM Sans' } } },
+      y:{ grid:{ color:'rgba(0,0,0,0.05)' }, ticks:{ color:'#a09d98', font:{ size:11, family:'DM Sans' },
+        callback: v => prefix==='$' ? '$'+(v/1000).toFixed(0)+'k' : v+'%'
       }}
     }
   };
 }
 
 loadData();
-
-// Auto-refresh every hour
 setInterval(loadData, 60 * 60 * 1000);
 </script>
 </body>
