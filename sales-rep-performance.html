@@ -2,291 +2,276 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Jackson Services — Sales Rep Performance</title>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<title>Jackson Services | Sales Rep Performance</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #111827; --surface: #1E2A3B; --surface2: #253347;
-    --border: rgba(255,255,255,0.07); --border-strong: rgba(255,255,255,0.15);
-    --text: #F0F4F8; --text-secondary: #8A9BB0; --text-tertiary: #5A6B80;
-    --accent: #F47B20; --success: #34D399; --warning: #FBBF24;
-    --radius: 10px; --radius-sm: 6px;
+    --orange: #E8600A; --orange-light: #FF7A20; --orange-dim: rgba(232,96,10,0.15);
+    --navy: #0F1F3D; --navy-mid: #1A2F52; --navy-light: #243A65;
+    --text: #E8EDF5; --text-dim: #9DB0CC; --text-muted: #4A5F7F;
+    --border: rgba(255,255,255,0.08); --card-bg: rgba(26,47,82,0.7);
+    --good: #2ECC71; --warn: #F39C12; --bad: #E74C3C;
   }
-  body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; line-height: 1.5; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: var(--navy); color: var(--text); font-family: 'Barlow', sans-serif; }
 
-  #loading-screen { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999; gap: 16px; }
-  .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-size: 13px; color: var(--text-secondary); }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background: radial-gradient(ellipse 70% 50% at 5% 10%, rgba(232,96,10,0.07) 0%, transparent 60%),
+      repeating-linear-gradient(90deg, transparent, transparent 80px, rgba(255,255,255,0.01) 80px, rgba(255,255,255,0.01) 81px);
+    pointer-events: none; z-index: 0;
+  }
 
-  #dashboard { display: none; }
+  .wrap {
+    position: relative; z-index: 1;
+    width: 100%; height: 100vh;
+    display: grid;
+    grid-template-rows: auto auto auto 1fr auto;
+    padding: 1vh 1.2vw; gap: 0.8vh;
+  }
 
-  header { background: linear-gradient(135deg, #1A2B4A 0%, #243660 100%); border-bottom: 3px solid var(--accent); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 52px; position: sticky; top: 0; z-index: 100; }
-  .logo { display: flex; align-items: center; gap: 10px; }
-  .logo-mark { width: 28px; height: 28px; background: var(--accent); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 11px; }
-  .logo-text { font-size: 14px; font-weight: 600; letter-spacing: -0.3px; }
-  .logo-sub { font-size: 11px; color: var(--text-secondary); margin-left: 6px; }
-  .header-right { display: flex; align-items: center; gap: 12px; }
-  .header-meta { font-size: 11px; color: var(--text-tertiary); font-family: 'Barlow', sans-serif; }
-  .refresh-btn { font-family: 'Barlow', sans-serif; font-size: 11px; font-weight: 500; padding: 5px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); background: var(--surface2); color: var(--text-secondary); cursor: pointer; }
-  .refresh-btn:hover { background: #FF9A45; }
+  header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.6vh; border-bottom: 1px solid var(--border); }
+  .brand { display: flex; align-items: center; gap: 1vw; }
+  .brand-mark { width: 5.5vh; height: 5.5vh; background: var(--orange); display: flex; align-items: center; justify-content: center; clip-path: polygon(0 0, 85% 0, 100% 15%, 100% 100%, 15% 100%, 0 85%); flex-shrink: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: clamp(14px,2vh,24px); color: white; }
+  .brand-text h1 { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(24px,3.8vh,52px); font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; line-height: 1; }
+  .brand-text p { font-size: clamp(11px,1.4vh,18px); color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 2px; font-weight: 600; }
+  .header-right { display: flex; align-items: center; gap: 2vw; }
+  .mtd-badge { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(18px,2.6vh,36px); font-weight: 900; color: var(--orange); letter-spacing: 0.08em; text-transform: uppercase; }
+  .header-meta { text-align: right; font-size: clamp(11px,1.3vh,17px); color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; line-height: 1.6; font-weight: 600; }
 
-  .main { padding: 20px 24px; }
+  /* GOAL BAR */
+  .goal-card { background: var(--card-bg); border: 1px solid var(--border); border-top: 4px solid var(--good); padding: 1vh 1.2vw; backdrop-filter: blur(6px); }
+  .goal-top { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 0.6vh; }
+  .goal-block .goal-label { font-size: clamp(10px,1.2vh,15px); letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 0.2vh; }
+  .goal-block .goal-val { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(24px,4vh,54px); font-weight: 900; line-height: 1; }
+  .goal-block .goal-val.orange { color: var(--orange); }
+  .goal-block .goal-val.muted { color: var(--text-muted); }
+  .goal-pct { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(24px,4vh,54px); font-weight: 900; line-height: 1; }
+  .goal-bar-track { width: 100%; height: 10px; background: rgba(255,255,255,0.07); border-radius: 5px; overflow: hidden; margin-bottom: 0.3vh; }
+  .goal-bar-fill { height: 100%; background: linear-gradient(90deg, var(--orange), #FF9A50); border-radius: 5px; }
+  .goal-info { display: flex; justify-content: space-between; font-size: clamp(10px,1.1vh,14px); color: var(--text-muted); font-weight: 600; }
 
-  /* GOAL CARD */
-  .goal-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 14px; position: relative; overflow: hidden; }
-  .goal-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--success); }
-  .goal-top { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; }
-  .goal-block { }
-  .goal-label { font-size: 10px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 3px; }
-  .goal-val { font-size: 26px; font-weight: 600; letter-spacing: -1px; line-height: 1; }
-  .goal-val.accent { color: var(--accent); }
-  .goal-val.muted { color: var(--text-tertiary); }
-  .goal-pct { font-size: 26px; font-weight: 600; letter-spacing: -1px; line-height: 1; }
-  .progress-track { height: 22px; background: var(--surface2); border-radius: 6px; overflow: hidden; border: 1px solid var(--border); }
-  .progress-fill { height: 100%; border-radius: 6px; display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; font-size: 12px; font-weight: 600; color: white; transition: width 1s cubic-bezier(0.4,0,0.2,1); min-width: 50px; }
-  .goal-meta-row { display: flex; justify-content: space-between; margin-top: 5px; font-size: 11px; color: var(--text-tertiary); font-family: 'Barlow', sans-serif; }
+  /* KPI ROW */
+  .kpi-row { display: grid; grid-template-columns: repeat(5,1fr); gap: 0.6vw; }
+  .kpi { background: var(--card-bg); border: 1px solid var(--border); border-top: 4px solid var(--orange); padding: 1vh 1vw; backdrop-filter: blur(6px); }
+  .kpi.green { border-top-color: var(--good); }
+  .kpi-label { font-size: clamp(10px,1.2vh,15px); letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.3vh; font-weight: 700; }
+  .kpi-val { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(22px,3.8vh,52px); font-weight: 900; line-height: 1; color: var(--text); }
+  .kpi-val.orange { color: var(--orange); }
+  .kpi-val.green { color: var(--good); }
+  .kpi-sub { font-size: clamp(10px,1.1vh,14px); color: var(--text-muted); margin-top: 0.2vh; font-weight: 600; }
 
-  /* KPI GRID */
-  .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 14px; }
-  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; position: relative; overflow: hidden; }
-  .kpi::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--accent); opacity: 0.35; }
-  .kpi.green::before { background: var(--success); opacity: 1; }
-  .kpi.orange::before { background: var(--accent); opacity: 1; }
-  .kpi-label { font-size: 10px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
-  .kpi-val { font-size: 24px; font-weight: 600; letter-spacing: -0.8px; color: var(--text); line-height: 1; margin-bottom: 3px; }
-  .kpi-val.accent { color: var(--accent); }
-  .kpi-val.green { color: var(--success); }
-  .kpi-sub { font-size: 11px; color: var(--text-tertiary); }
-
-  /* CHARTS ROW */
-  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-  .card-head { padding: 12px 16px; border-bottom: 1px solid var(--border); }
-  .card-title { font-size: 12px; font-weight: 600; letter-spacing: -0.2px; color: var(--text); }
-  .chart-pad { padding: 12px 16px; }
+  /* BODY GRID */
+  .body-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6vw; overflow: hidden; min-height: 0; }
+  .section { background: var(--card-bg); border: 1px solid var(--border); backdrop-filter: blur(6px); overflow: hidden; display: flex; flex-direction: column; min-height: 0; }
+  .sec-header { display: flex; align-items: center; justify-content: space-between; padding: 0.7vh 1vw; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .sec-title { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(13px,1.8vh,24px); font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; }
+  .sec-badge { font-size: clamp(10px,1.1vh,14px); letter-spacing: 0.1em; text-transform: uppercase; color: var(--orange); background: var(--orange-dim); padding: 3px 10px; font-weight: 700; }
 
   /* TABLE */
-  .table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  thead th { padding: 8px 12px; text-align: left; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-secondary); border-bottom: 1px solid var(--border); white-space: nowrap; background: var(--surface2); }
-  td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-  tr:last-child td { border-bottom: none; }
-  tbody tr:hover td { background: var(--surface2); }
-  td.name-cell { font-weight: 600; font-size: 13px; }
+  .table-wrap { overflow: hidden; flex: 1; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { font-size: clamp(10px,1.2vh,15px); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); font-weight: 800; padding: 0.5vh 0.8vw; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); }
+  tbody tr:hover { background: rgba(232,96,10,0.05); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody td { padding: 0.65vh 0.8vw; font-size: clamp(13px,1.8vh,24px); color: var(--text-dim); font-weight: 500; white-space: nowrap; }
+  td.name-cell { font-weight: 700; color: var(--text); font-size: clamp(13px,1.8vh,24px); }
+  td.val-cell { font-weight: 900; color: var(--text); }
+  td.orange { color: var(--orange); font-weight: 900; }
 
-  .badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-  .badge-green  { background: rgba(52,211,153,0.15); color: var(--success); }
-  .badge-orange { background: rgba(244,123,32,0.15); color: var(--accent); }
-  .badge-yellow { background: rgba(251,191,36,0.15); color: var(--warning); }
+  .pill { display: inline-block; padding: 2px 8px; font-size: clamp(11px,1.4vh,18px); font-weight: 800; }
+  .pill-good { background: rgba(46,204,113,0.12); color: var(--good); }
+  .pill-warn { background: rgba(243,156,18,0.12); color: var(--warn); }
+  .pill-bad  { background: rgba(231,76,60,0.12); color: var(--bad); }
 
-  footer { text-align: center; padding: 16px; font-size: 11px; color: var(--text-tertiary); font-family: 'Barlow', sans-serif; }
+  /* CHARTS SECTION */
+  .charts-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6vw; flex: 1; padding: 0.8vh 0.8vw; overflow: hidden; }
+  .chart-wrap { position: relative; }
+
+  footer { display: flex; align-items: center; justify-content: space-between; padding-top: 0.5vh; border-top: 1px solid var(--border); flex-shrink: 0; }
+  .foot-l { font-size: clamp(10px,1.1vh,14px); color: var(--text-muted); letter-spacing: 0.06em; font-weight: 600; }
+  .foot-r { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(12px,1.4vh,18px); font-weight: 800; color: var(--orange); letter-spacing: 0.06em; text-transform: uppercase; }
+
+  #loading { position: fixed; inset: 0; background: var(--navy); z-index: 200; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 2vh; }
+  #loading h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 5vh; font-weight: 900; color: var(--orange); letter-spacing: 0.1em; }
+  #loading p { font-size: 1.5vh; color: var(--text-muted); letter-spacing: 0.12em; text-transform: uppercase; }
+  .load-bar { width: 20vw; height: 3px; background: rgba(255,255,255,0.07); border-radius: 2px; overflow: hidden; }
+  .load-bar-fill { width: 40%; height: 100%; background: var(--orange); border-radius: 2px; animation: pulse 1.2s ease-in-out infinite; }
+  @keyframes pulse { 0% { transform: translateX(-150%); } 100% { transform: translateX(350%); } }
 </style>
 </head>
 <body>
 
-<div id="loading-screen">
-  <div class="spinner"></div>
-  <div class="loading-text">Loading sales data...</div>
+<div id="loading">
+  <h2>JACKSON SERVICES</h2>
+  <p>Loading sales data…</p>
+  <div class="load-bar"><div class="load-bar-fill"></div></div>
 </div>
 
-<div id="dashboard">
+<div class="wrap">
   <header>
-    <div class="logo">
-      <div class="logo-mark">JS</div>
-      <span class="logo-text">Jackson Services</span>
-      <span class="logo-sub">Sales Rep Performance</span>
+    <div class="brand">
+      <div class="brand-mark">JS</div>
+      <div class="brand-text">
+        <h1>Jackson Services</h1>
+        <p>Sales Rep Performance</p>
+      </div>
     </div>
     <div class="header-right">
-      <span class="header-meta" id="lastUpdated"></span>
-      <span class="header-meta">Auto-refreshes hourly</span>
-      <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+      <div class="header-meta" id="header-meta">Loading…</div>
+      <div class="mtd-badge">Month to Date</div>
     </div>
   </header>
 
-  <div class="main">
-
-    <!-- GOAL PROGRESS -->
-    <div class="goal-card">
-      <div class="goal-top">
-        <div class="goal-block">
-          <div class="goal-label">Total Team Sales</div>
-          <div class="goal-val accent" id="goal-actual">—</div>
-        </div>
-        <div class="goal-block" style="text-align:center">
-          <div class="goal-label">Progress to Goal</div>
-          <div class="goal-pct" id="goal-pct">—</div>
-        </div>
-        <div class="goal-block" style="text-align:right">
-          <div class="goal-label">Monthly Goal</div>
-          <div class="goal-val muted">$675,000</div>
-        </div>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="goal-bar" style="width:0%"></div>
-      </div>
-      <div class="goal-meta-row">
-        <span>$0</span>
-        <span id="goal-remaining"></span>
-        <span>$675,000</span>
-      </div>
+  <!-- GOAL -->
+  <div class="goal-card">
+    <div class="goal-top">
+      <div class="goal-block"><div class="goal-label">Total Team Sales</div><div class="goal-val orange" id="goal-actual">—</div></div>
+      <div class="goal-block" style="text-align:center"><div class="goal-label">Progress to Goal</div><div class="goal-pct" id="goal-pct">—</div></div>
+      <div class="goal-block" style="text-align:right"><div class="goal-label">Monthly Goal</div><div class="goal-val muted">$675,000</div></div>
     </div>
+    <div class="goal-bar-track"><div class="goal-bar-fill" id="goal-bar" style="width:0%"></div></div>
+    <div class="goal-info"><span>$0</span><span id="goal-remaining"></span><span>$675,000</span></div>
+  </div>
 
-    <!-- KPI CARDS -->
-    <div class="kpi-grid" id="team-stats"></div>
+  <!-- KPI ROW -->
+  <div class="kpi-row" id="kpi-row"></div>
 
-    <!-- CHARTS -->
-    <div class="charts-row">
-      <div class="card">
-        <div class="card-head"><span class="card-title">Total Sales by Rep</span></div>
-        <div class="chart-pad"><div style="position:relative;height:180px"><canvas id="salesChart"></canvas></div></div>
-      </div>
-      <div class="card">
-        <div class="card-head"><span class="card-title">Close Rate by Rep</span></div>
-        <div class="chart-pad"><div style="position:relative;height:180px"><canvas id="closeRateChart"></canvas></div></div>
-      </div>
-    </div>
-
-    <!-- TABLE -->
-    <div class="card">
-      <div class="card-head"><span class="card-title">Individual Rep Performance</span></div>
+  <!-- BODY -->
+  <div class="body-grid">
+    <div class="section">
+      <div class="sec-header"><span class="sec-title">Rep Detail</span><span class="sec-badge">Individual Performance</span></div>
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th>Rep</th><th>Total Sales</th><th>Opportunities</th><th>Close Rate</th>
-            <th>Avg Sale</th><th>Tech Lead Sales</th><th>TGL Close Rate</th>
-            <th>Mktg Lead Sales</th><th>Mktg Close Rate</th><th>WIP Jobs</th>
+            <th>Rep</th><th>Total Sales</th><th>Opps</th><th>Close Rate</th>
+            <th>Avg Sale</th><th>TGL Sales</th><th>Mktg Sales</th><th>WIP</th>
           </tr></thead>
           <tbody id="table-body"></tbody>
         </table>
       </div>
     </div>
-
+    <div class="section">
+      <div class="sec-header"><span class="sec-title">Sales &amp; Close Rate</span><span class="sec-badge">By Rep</span></div>
+      <div class="charts-inner">
+        <div class="chart-wrap"><canvas id="salesChart"></canvas></div>
+        <div class="chart-wrap"><canvas id="closeRateChart"></canvas></div>
+      </div>
+    </div>
   </div>
-  <footer>Jackson Services &nbsp;·&nbsp; Sales Rep Performance &nbsp;·&nbsp; Month to Date</footer>
+
+  <footer>
+    <div class="foot-l">Jackson Services &nbsp;·&nbsp; Sales Rep Performance &nbsp;·&nbsp; Month to Date</div>
+    <div class="foot-r" id="last-updated">—</div>
+  </footer>
 </div>
 
 <script>
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0NT7lEqqpwrkgoy6vcIuFkgmUA979edn_-ufgaxcbcIQsyho4vTVPGXlA9C1zXEGz-A3Ysy95y1xy/pub?gid=0&single=true&output=csv';
 const GOAL = 675000;
 let salesChart, closeRateChart;
-const COLORS = ['#d4500a','#1a5fa8','#1a7a57','#a06010','#5b4fcf','#a0304a'];
+const COLORS = ['#E8600A','#1a5fa8','#2ECC71','#F39C12','#9b59b6','#E74C3C'];
 
 function fmt$(v) {
   const n = parseFloat(String(v).replace(/[$,%]/g,''));
   if (isNaN(n)) return v;
-  return '$' + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  return '$' + n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
-function fmtPct(v) {
-  const n = parseFloat(String(v).replace('%','').trim());
-  return isNaN(n) ? v : n.toFixed(1) + '%';
-}
-function pctBadge(v) {
+function fmtPct(v) { const n = parseFloat(String(v).replace('%','')); return isNaN(n)?v:n.toFixed(1)+'%'; }
+function pctPill(v) {
   const n = parseFloat(String(v).replace('%',''));
-  if (isNaN(n)) return `<span class="badge badge-orange">${v}</span>`;
-  if (n >= 70)  return `<span class="badge badge-green">${fmtPct(v)}</span>`;
-  if (n >= 50)  return `<span class="badge badge-yellow">${fmtPct(v)}</span>`;
-  return `<span class="badge badge-orange">${fmtPct(v)}</span>`;
+  if (isNaN(n)) return `<span class="pill pill-bad">${v}</span>`;
+  if (n>=70) return `<span class="pill pill-good">${fmtPct(v)}</span>`;
+  if (n>=50) return `<span class="pill pill-warn">${fmtPct(v)}</span>`;
+  return `<span class="pill pill-bad">${fmtPct(v)}</span>`;
 }
-function destroyChart(c) { if (c) c.destroy(); }
+function destroyChart(c) { if(c) c.destroy(); }
 
 async function fetchCSV(url) {
-  try { const r = await fetch(url); if (r.ok) return await r.text(); } catch(e) {}
-  try { const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`); if (r.ok) return await r.text(); } catch(e) {}
+  try { const r = await fetch(url); if(r.ok) return await r.text(); } catch(e) {}
+  try { const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`); if(r.ok) return await r.text(); } catch(e) {}
   return null;
 }
 
 async function loadData() {
-  document.getElementById('lastUpdated').textContent = '';
   const csv = await fetchCSV(SHEET_URL);
-  if (!csv) { document.getElementById('loading-screen').innerHTML = '<div style="color:#c0350d;font-size:13px">Could not load data. Check sheet sharing settings.</div>'; return; }
-  renderSales(Papa.parse(csv, { header: true, skipEmptyLines: true }).data);
-  document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-  document.getElementById('loading-screen').style.display = 'none';
-  document.getElementById('dashboard').style.display = 'block';
+  if (!csv) { document.getElementById('loading').innerHTML='<h2 style="color:var(--bad)">⚠ Could not load data</h2><p>Check sheet sharing settings.</p>'; return; }
+  renderSales(Papa.parse(csv,{header:true,skipEmptyLines:true}).data);
+  document.getElementById('loading').style.display='none';
+  document.getElementById('last-updated').textContent='Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
 }
 
 function renderSales(rows) {
-  const reps = rows.filter(r => r['Name'] && r['Name'].trim() && !r['Name'].startsWith('$') && isNaN(r['Name'].charAt(0)));
+  const reps = rows.filter(r=>r['Name']&&r['Name'].trim()&&!r['Name'].startsWith('$')&&isNaN(r['Name'].charAt(0)));
+  const totalSales   = reps.reduce((s,r)=>s+parseFloat(String(r['Total Sales']||'0').replace(/[$,]/g,'')),0);
+  const totalOpps    = reps.reduce((s,r)=>s+parseFloat(r['Sales Opportunity']||0),0);
+  const totalClosed  = reps.reduce((s,r)=>s+parseFloat(r['Closed Opportunities']||0),0);
+  const closeRate    = totalOpps>0?(totalClosed/totalOpps*100).toFixed(1):0;
+  const avgSale      = totalClosed>0?totalSales/totalClosed:0;
+  const totalWIP     = reps.reduce((s,r)=>s+parseFloat(r['WIP Jobs']||0),0);
 
-  const totalSales    = reps.reduce((s,r) => s + parseFloat(String(r['Total Sales']||'0').replace(/[$,]/g,'')), 0);
-  const totalOpps     = reps.reduce((s,r) => s + parseFloat(r['Sales Opportunity']||0), 0);
-  const totalClosed   = reps.reduce((s,r) => s + parseFloat(r['Closed Opportunities']||0), 0);
-  const teamCloseRate = totalOpps > 0 ? (totalClosed/totalOpps*100).toFixed(1) : 0;
-  const avgSale       = totalClosed > 0 ? totalSales/totalClosed : 0;
-  const totalWIP      = reps.reduce((s,r) => s + parseFloat(r['WIP Jobs']||0), 0);
+  document.getElementById('header-meta').textContent=`${reps.length} Reps · ${totalClosed} Closed Jobs`;
 
-  // Goal progress
-  const pct = Math.min((totalSales / GOAL) * 100, 100);
-  const remaining = GOAL - totalSales;
-  const barColor = pct >= 100 ? '#1a7a57' : pct >= 75 ? '#d4500a' : '#1a5fa8';
-  const pctColor = pct >= 100 ? '#1a7a57' : pct >= 75 ? '#d4500a' : '#c4460d';
-  document.getElementById('goal-actual').textContent = fmt$(totalSales);
-  document.getElementById('goal-pct').textContent = pct.toFixed(1) + '%';
-  document.getElementById('goal-pct').style.color = pctColor;
-  document.getElementById('goal-bar').style.width = pct + '%';
-  document.getElementById('goal-bar').style.background = barColor;
-  document.getElementById('goal-bar').textContent = pct.toFixed(1) + '%';
-  document.getElementById('goal-remaining').textContent = remaining > 0 ? fmt$(remaining) + ' to go' : '🎉 Goal reached!';
+  // Goal
+  const pct = Math.min((totalSales/GOAL)*100,100);
+  const remaining = GOAL-totalSales;
+  const pctColor = pct>=100?'var(--good)':pct>=75?'var(--warn)':'var(--bad)';
+  document.getElementById('goal-actual').textContent=fmt$(totalSales);
+  document.getElementById('goal-pct').textContent=pct.toFixed(1)+'%';
+  document.getElementById('goal-pct').style.color=pctColor;
+  document.getElementById('goal-bar').style.width=pct+'%';
+  document.getElementById('goal-remaining').textContent=remaining>0?fmt$(remaining)+' remaining':'🎉 Goal reached!';
+  document.getElementById('goal-remaining').style.color=pctColor;
 
-  // KPI cards
-  document.getElementById('team-stats').innerHTML = `
-    <div class="kpi orange"><div class="kpi-label">Total Sales</div><div class="kpi-val accent">${fmt$(totalSales)}</div><div class="kpi-sub">${totalClosed} closed deals</div></div>
-    <div class="kpi green"><div class="kpi-label">Team Close Rate</div><div class="kpi-val green">${teamCloseRate}%</div><div class="kpi-sub">${totalClosed} of ${totalOpps} opps</div></div>
+  // KPIs
+  document.getElementById('kpi-row').innerHTML=`
+    <div class="kpi"><div class="kpi-label">Total Sales</div><div class="kpi-val orange">${fmt$(totalSales)}</div><div class="kpi-sub">${totalClosed} closed deals</div></div>
+    <div class="kpi green"><div class="kpi-label">Team Close Rate</div><div class="kpi-val green">${closeRate}%</div><div class="kpi-sub">${totalClosed} of ${totalOpps} opps</div></div>
     <div class="kpi"><div class="kpi-label">Avg Closed Sale</div><div class="kpi-val">${fmt$(avgSale)}</div><div class="kpi-sub">Per closed deal</div></div>
     <div class="kpi"><div class="kpi-label">WIP Jobs</div><div class="kpi-val">${totalWIP}</div><div class="kpi-sub">In progress</div></div>
-    <div class="kpi"><div class="kpi-label">Active Reps</div><div class="kpi-val">${reps.length}</div><div class="kpi-sub">Tracked this period</div></div>
+    <div class="kpi"><div class="kpi-label">Active Reps</div><div class="kpi-val">${reps.length}</div><div class="kpi-sub">This period</div></div>
   `;
 
-  const names      = reps.map(r => r['Name'].trim().split(' ')[0]);
-  const sales      = reps.map(r => parseFloat(String(r['Total Sales']||'0').replace(/[$,]/g,'')));
-  const closeRates = reps.map(r => parseFloat(String(r['Close Rate']||'0').replace('%','')));
+  // Table
+  document.getElementById('table-body').innerHTML=reps.map(r=>`
+    <tr>
+      <td class="name-cell">${r['Name'].trim()}</td>
+      <td class="orange">${fmt$(r['Total Sales'])}</td>
+      <td>${r['Sales Opportunity']||'-'}</td>
+      <td>${pctPill(r['Close Rate'])}</td>
+      <td class="val-cell">${fmt$(r['Closed Average Sale'])}</td>
+      <td>${fmt$(r['Total Sales from TGL'])}</td>
+      <td>${fmt$(r['Total Sales from Marketing Leads'])}</td>
+      <td>${r['WIP Jobs']||'-'}</td>
+    </tr>`).join('');
+
+  // Charts
+  const names=reps.map(r=>r['Name'].trim().split(' ')[0]);
+  const sales=reps.map(r=>parseFloat(String(r['Total Sales']||'0').replace(/[$,]/g,'')));
+  const rates=reps.map(r=>parseFloat(String(r['Close Rate']||'0').replace('%','')));
 
   destroyChart(salesChart);
-  salesChart = new Chart(document.getElementById('salesChart'), {
-    type:'bar', data:{ labels:names, datasets:[{ data:sales, backgroundColor:COLORS, borderRadius:4 }] },
-    options: chartOpts('$')
+  salesChart=new Chart(document.getElementById('salesChart'),{
+    type:'bar', data:{labels:names,datasets:[{data:sales,backgroundColor:COLORS,borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+fmt$(ctx.raw)}}},
+      scales:{x:{grid:{display:false},ticks:{color:'#9DB0CC',font:{size:11,family:'Barlow'}}},
+        y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#9DB0CC',font:{size:10,family:'Barlow'},callback:v=>'$'+(v/1000).toFixed(0)+'k'}}}}
   });
 
   destroyChart(closeRateChart);
-  closeRateChart = new Chart(document.getElementById('closeRateChart'), {
-    type:'bar', data:{ labels:names, datasets:[{ data:closeRates, backgroundColor:COLORS, borderRadius:4 }] },
-    options: chartOpts('%')
+  closeRateChart=new Chart(document.getElementById('closeRateChart'),{
+    type:'bar', data:{labels:names,datasets:[{data:rates,backgroundColor:COLORS,borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+ctx.raw.toFixed(1)+'%'}}},
+      scales:{x:{grid:{display:false},ticks:{color:'#9DB0CC',font:{size:11,family:'Barlow'}}},
+        y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#9DB0CC',font:{size:10,family:'Barlow'},callback:v=>v+'%'}}}}
   });
-
-  document.getElementById('table-body').innerHTML = reps.map(r => `
-    <tr>
-      <td class="name-cell">${r['Name'].trim()}</td>
-      <td style="font-weight:600;color:var(--accent)">${fmt$(r['Total Sales'])}</td>
-      <td>${r['Sales Opportunity']||'-'}</td>
-      <td>${pctBadge(r['Close Rate'])}</td>
-      <td>${fmt$(r['Closed Average Sale'])}</td>
-      <td>${fmt$(r['Total Sales from TGL'])}</td>
-      <td>${pctBadge(r['Close Rate from TGL'])}</td>
-      <td>${fmt$(r['Total Sales from Marketing Leads'])}</td>
-      <td>${pctBadge(r['Close Rate from Marketing Leads'])}</td>
-      <td>${r['WIP Jobs']||'-'}</td>
-    </tr>`).join('');
-}
-
-function chartOpts(prefix) {
-  return {
-    responsive:true, maintainAspectRatio:false,
-    plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label: ctx => prefix==='$' ? ' '+fmt$(ctx.raw) : ' '+ctx.raw.toFixed(1)+'%' }}},
-    scales:{
-      x:{ grid:{ display:false }, ticks:{ color:'#8A9BB0', font:{ size:11, family:'DM Sans' } } },
-      y:{ grid:{ color:'rgba(255,255,255,0.05)' }, ticks:{ color:'#8A9BB0', font:{ size:11, family:'DM Sans' },
-        callback: v => prefix==='$' ? '$'+(v/1000).toFixed(0)+'k' : v+'%'
-      }}
-    }
-  };
 }
 
 loadData();
-setInterval(loadData, 60 * 60 * 1000);
+setInterval(loadData,60*60*1000);
 </script>
 </body>
 </html>
