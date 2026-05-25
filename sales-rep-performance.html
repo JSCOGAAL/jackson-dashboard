@@ -223,6 +223,9 @@ function renderSales(rows) {
     <div class="kpi"><div class="kpi-label">Active Reps</div><div class="kpi-val">${reps.length}</div><div class="kpi-sub">This period</div></div>
   `;
 
+  // Sort by total sales descending
+  reps.sort((a,b) => parseFloat(String(b['Total Sales']||'0').replace(/[$,]/g,'')) - parseFloat(String(a['Total Sales']||'0').replace(/[$,]/g,'')));
+
   // Table
   document.getElementById('table-body').innerHTML=reps.map(r=>`
     <tr>
