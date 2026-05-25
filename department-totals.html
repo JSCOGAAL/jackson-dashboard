@@ -2,118 +2,131 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Jackson Services — Department Totals</title>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<title>Jackson Services | Department Totals</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #111827; --surface: #1E2A3B; --surface2: #253347;
-    --border: rgba(255,255,255,0.07); --border-strong: rgba(255,255,255,0.15);
-    --text: #F0F4F8; --text-secondary: #8A9BB0; --text-tertiary: #5A6B80;
-    --accent: #F47B20; --success: #34D399; --warning: #FBBF24;
-    --radius: 10px; --radius-sm: 6px;
+    --orange: #E8600A; --orange-light: #FF7A20; --orange-dim: rgba(232,96,10,0.15);
+    --navy: #0F1F3D; --navy-mid: #1A2F52; --navy-light: #243A65;
+    --text: #E8EDF5; --text-dim: #9DB0CC; --text-muted: #4A5F7F;
+    --border: rgba(255,255,255,0.08); --card-bg: rgba(26,47,82,0.7);
+    --good: #2ECC71; --warn: #F39C12; --bad: #E74C3C;
   }
-  body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; line-height: 1.5; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: var(--navy); color: var(--text); font-family: 'Barlow', sans-serif; }
 
-  #loading-screen { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999; gap: 16px; }
-  .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-size: 13px; color: var(--text-secondary); }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background: radial-gradient(ellipse 70% 50% at 5% 10%, rgba(232,96,10,0.07) 0%, transparent 60%),
+      repeating-linear-gradient(90deg, transparent, transparent 80px, rgba(255,255,255,0.01) 80px, rgba(255,255,255,0.01) 81px);
+    pointer-events: none; z-index: 0;
+  }
 
-  #dashboard { display: none; }
+  .wrap {
+    position: relative; z-index: 1;
+    width: 100%; height: 100vh;
+    display: grid;
+    grid-template-rows: auto auto 1fr auto;
+    padding: 1vh 1.2vw; gap: 0.8vh;
+  }
 
-  header { background: linear-gradient(135deg, #1A2B4A 0%, #243660 100%); border-bottom: 3px solid var(--accent); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 52px; position: sticky; top: 0; z-index: 100; }
-  .logo { display: flex; align-items: center; gap: 10px; }
-  .logo-mark { width: 28px; height: 28px; background: var(--accent); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 11px; }
-  .logo-text { font-size: 14px; font-weight: 600; letter-spacing: -0.3px; }
-  .logo-sub { font-size: 11px; color: var(--text-secondary); margin-left: 6px; }
-  .header-right { display: flex; align-items: center; gap: 12px; }
-  .header-meta { font-size: 11px; color: var(--text-tertiary); font-family: 'Barlow', sans-serif; }
-  .refresh-btn { font-family: 'Barlow', sans-serif; font-size: 11px; font-weight: 500; padding: 5px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); background: var(--surface2); color: var(--text-secondary); cursor: pointer; }
-  .refresh-btn:hover { background: #FF9A45; }
+  header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.6vh; border-bottom: 1px solid var(--border); }
+  .brand { display: flex; align-items: center; gap: 1vw; }
+  .brand-mark { width: 5.5vh; height: 5.5vh; background: var(--orange); display: flex; align-items: center; justify-content: center; clip-path: polygon(0 0, 85% 0, 100% 15%, 100% 100%, 15% 100%, 0 85%); flex-shrink: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: clamp(14px,2vh,24px); color: white; }
+  .brand-text h1 { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(24px,3.8vh,52px); font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; line-height: 1; }
+  .brand-text p { font-size: clamp(11px,1.4vh,18px); color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 2px; font-weight: 600; }
+  .header-right { display: flex; align-items: center; gap: 2vw; }
+  .mtd-badge { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(18px,2.6vh,36px); font-weight: 900; color: var(--orange); letter-spacing: 0.08em; text-transform: uppercase; }
+  .header-meta { text-align: right; font-size: clamp(11px,1.3vh,17px); color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; line-height: 1.6; font-weight: 600; }
 
-  .main { padding: 20px 24px; }
+  /* KPI ROW */
+  .kpi-row { display: grid; grid-template-columns: repeat(5,1fr); gap: 0.6vw; }
+  .kpi { background: var(--card-bg); border: 1px solid var(--border); border-top: 4px solid var(--orange); padding: 1vh 1vw; backdrop-filter: blur(6px); }
+  .kpi.green { border-top-color: var(--good); }
+  .kpi.blue  { border-top-color: #1a5fa8; }
+  .kpi.warn  { border-top-color: var(--warn); }
+  .kpi-label { font-size: clamp(10px,1.2vh,15px); letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.3vh; font-weight: 700; }
+  .kpi-val { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(22px,3.8vh,52px); font-weight: 900; line-height: 1; color: var(--text); }
+  .kpi-val.orange { color: var(--orange); }
+  .kpi-val.green  { color: var(--good); }
+  .kpi-val.warn   { color: var(--warn); }
+  .kpi-sub { font-size: clamp(10px,1.1vh,14px); color: var(--text-muted); margin-top: 0.2vh; font-weight: 600; }
 
-  /* KPI GRID */
-  .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 14px; }
-  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; position: relative; overflow: hidden; }
-  .kpi::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--accent); opacity: 0.35; }
-  .kpi.green::before  { background: var(--success); opacity: 1; }
-  .kpi.orange::before { background: var(--accent); opacity: 1; }
-  .kpi.blue::before   { background: #1A6FC4; opacity: 1; }
-  .kpi-label { font-size: 10px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
-  .kpi-val { font-size: 24px; font-weight: 600; letter-spacing: -0.8px; color: var(--text); line-height: 1; margin-bottom: 3px; }
-  .kpi-val.accent { color: var(--accent); }
-  .kpi-val.green  { color: var(--success); }
-  .kpi-sub { font-size: 11px; color: var(--text-tertiary); }
-
-  /* METRICS GRID */
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 14px; }
-  .card-head { padding: 12px 16px; border-bottom: 1px solid var(--border); }
-  .card-title { font-size: 12px; font-weight: 600; letter-spacing: -0.2px; }
-
-  .metrics-wrap { padding: 12px 16px; }
-  .metrics-division { padding: 10px 0; border-bottom: 1px solid var(--border); }
-  .metrics-division:last-child { border-bottom: none; padding-bottom: 0; }
-  .metrics-div-name { font-size: 11px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
-  .metrics-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-  .metric-item { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 6px; text-align: center; }
-  .metric-item-label { font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-tertiary); margin-bottom: 4px; }
-  .metric-item-value { font-size: 16px; font-weight: 600; letter-spacing: -0.5px; line-height: 1; }
+  /* BODY */
+  .body-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6vw; overflow: hidden; min-height: 0; }
+  .section { background: var(--card-bg); border: 1px solid var(--border); backdrop-filter: blur(6px); overflow: hidden; display: flex; flex-direction: column; min-height: 0; }
+  .sec-header { display: flex; align-items: center; justify-content: space-between; padding: 0.7vh 1vw; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .sec-title { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(13px,1.8vh,24px); font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; }
+  .sec-badge { font-size: clamp(10px,1.1vh,14px); letter-spacing: 0.1em; text-transform: uppercase; color: var(--orange); background: var(--orange-dim); padding: 3px 10px; font-weight: 700; }
 
   /* TABLE */
-  .table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  thead th { padding: 8px 12px; text-align: left; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-secondary); border-bottom: 1px solid var(--border); white-space: nowrap; background: var(--surface2); }
-  td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-  tr:last-child td { border-bottom: none; }
-  tbody tr:hover td { background: var(--surface2); }
-  td.name-cell { font-weight: 600; font-size: 13px; }
+  .table-wrap { overflow: hidden; flex: 1; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { font-size: clamp(10px,1.2vh,15px); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); font-weight: 800; padding: 0.5vh 0.8vw; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); }
+  tbody tr:hover { background: rgba(232,96,10,0.05); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody td { padding: 0.65vh 0.8vw; font-size: clamp(13px,1.8vh,24px); color: var(--text-dim); font-weight: 500; white-space: nowrap; }
+  td.name-cell { font-weight: 700; color: var(--text); font-size: clamp(13px,1.8vh,24px); }
+  td.orange { color: var(--orange); font-weight: 900; }
+  td.warn { color: var(--warn); font-weight: 700; }
 
-  .badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-  .badge-green  { background: rgba(52,211,153,0.15); color: var(--success); }
-  .badge-orange { background: rgba(244,123,32,0.15); color: var(--accent); }
-  .badge-yellow { background: rgba(251,191,36,0.15); color: var(--warning); }
+  /* METRICS */
+  .metrics-wrap { flex: 1; overflow: hidden; padding: 0.6vh 0.8vw; display: flex; flex-direction: column; gap: 0.8vh; justify-content: space-evenly; }
+  .div-block { }
+  .div-name { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(12px,1.6vh,22px); font-weight: 900; color: var(--orange); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.4vh; }
+  .metrics-row { display: grid; grid-template-columns: repeat(7,1fr); gap: 0.4vw; }
+  .metric-item { background: rgba(255,255,255,0.04); border: 1px solid var(--border); padding: 0.5vh 0.3vw; text-align: center; }
+  .metric-label { font-size: clamp(9px,1vh,13px); text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 0.2vh; font-weight: 700; }
+  .metric-val { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(16px,2.4vh,32px); font-weight: 900; line-height: 1; }
 
-  footer { text-align: center; padding: 16px; font-size: 11px; color: var(--text-tertiary); font-family: 'Barlow', sans-serif; }
+  footer { display: flex; align-items: center; justify-content: space-between; padding-top: 0.5vh; border-top: 1px solid var(--border); flex-shrink: 0; }
+  .foot-l { font-size: clamp(10px,1.1vh,14px); color: var(--text-muted); letter-spacing: 0.06em; font-weight: 600; }
+  .foot-r { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(12px,1.4vh,18px); font-weight: 800; color: var(--orange); letter-spacing: 0.06em; text-transform: uppercase; }
+
+  #loading { position: fixed; inset: 0; background: var(--navy); z-index: 200; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 2vh; }
+  #loading h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 5vh; font-weight: 900; color: var(--orange); letter-spacing: 0.1em; }
+  #loading p { font-size: 1.5vh; color: var(--text-muted); letter-spacing: 0.12em; text-transform: uppercase; }
+  .load-bar { width: 20vw; height: 3px; background: rgba(255,255,255,0.07); border-radius: 2px; overflow: hidden; }
+  .load-bar-fill { width: 40%; height: 100%; background: var(--orange); border-radius: 2px; animation: pulse 1.2s ease-in-out infinite; }
+  @keyframes pulse { 0% { transform: translateX(-150%); } 100% { transform: translateX(350%); } }
 </style>
 </head>
 <body>
 
-<div id="loading-screen">
-  <div class="spinner"></div>
-  <div class="loading-text">Loading department data...</div>
+<div id="loading">
+  <h2>JACKSON SERVICES</h2>
+  <p>Loading department data…</p>
+  <div class="load-bar"><div class="load-bar-fill"></div></div>
 </div>
 
-<div id="dashboard">
+<div class="wrap">
   <header>
-    <div class="logo">
-      <div class="logo-mark">JS</div>
-      <span class="logo-text">Jackson Services</span>
-      <span class="logo-sub">Department Totals</span>
+    <div class="brand">
+      <div class="brand-mark">JS</div>
+      <div class="brand-text">
+        <h1>Jackson Services</h1>
+        <p>Department Totals</p>
+      </div>
     </div>
     <div class="header-right">
-      <span class="header-meta" id="lastUpdated"></span>
-      <span class="header-meta">Auto-refreshes hourly</span>
-      <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+      <div class="header-meta" id="header-meta">Loading…</div>
+      <div class="mtd-badge">Month to Date</div>
     </div>
   </header>
 
-  <div class="main">
+  <!-- KPI ROW -->
+  <div class="kpi-row" id="kpi-row"></div>
 
-    <!-- KPI CARDS -->
-    <div class="kpi-grid" id="dispatch-stats"></div>
-
-    <!-- KEY METRICS BY DIVISION -->
-    <div class="card">
-      <div class="card-head"><span class="card-title">Key Metrics by Division</span></div>
+  <!-- BODY -->
+  <div class="body-grid">
+    <div class="section">
+      <div class="sec-header"><span class="sec-title">Key Metrics by Division</span><span class="sec-badge">MTD</span></div>
       <div class="metrics-wrap" id="metrics-grid"></div>
     </div>
-
-    <!-- DIVISION TABLE -->
-    <div class="card">
-      <div class="card-head"><span class="card-title">Department Totals by Division</span></div>
+    <div class="section">
+      <div class="sec-header"><span class="sec-title">Division Detail</span><span class="sec-badge">Pacing &amp; Revenue</span></div>
       <div class="table-wrap">
         <table>
           <thead><tr>
@@ -124,9 +137,12 @@
         </table>
       </div>
     </div>
-
   </div>
-  <footer>Jackson Services &nbsp;·&nbsp; Department Totals &nbsp;·&nbsp; Month to Date</footer>
+
+  <footer>
+    <div class="foot-l">Jackson Services &nbsp;·&nbsp; Department Totals &nbsp;·&nbsp; Month to Date</div>
+    <div class="foot-r" id="last-updated">—</div>
+  </footer>
 </div>
 
 <script>
@@ -135,75 +151,71 @@ const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0NT7lEqqpwr
 function fmt$(v) {
   const n = parseFloat(String(v).replace(/[$,%]/g,''));
   if (isNaN(n)) return v;
-  return '$' + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
-}
-function fmtPct(v) {
-  const n = parseFloat(String(v).replace('%','').trim());
-  return isNaN(n) ? v : n.toFixed(1) + '%';
+  return '$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 
 async function fetchCSV(url) {
-  try { const r = await fetch(url); if (r.ok) return await r.text(); } catch(e) {}
-  try { const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`); if (r.ok) return await r.text(); } catch(e) {}
+  try { const r=await fetch(url); if(r.ok) return await r.text(); } catch(e) {}
+  try { const r=await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`); if(r.ok) return await r.text(); } catch(e) {}
   return null;
 }
 
 async function loadData() {
   const csv = await fetchCSV(SHEET_URL);
-  if (!csv) { document.getElementById('loading-screen').innerHTML = '<div style="color:#c0350d;font-size:13px">Could not load data. Check sheet sharing settings.</div>'; return; }
-  renderDispatch(Papa.parse(csv, { header: true, skipEmptyLines: true }).data);
-  document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-  document.getElementById('loading-screen').style.display = 'none';
-  document.getElementById('dashboard').style.display = 'block';
+  if (!csv) { document.getElementById('loading').innerHTML='<h2 style="color:var(--bad)">⚠ Could not load data</h2><p>Check sheet sharing settings.</p>'; return; }
+  renderDispatch(Papa.parse(csv,{header:true,skipEmptyLines:true}).data);
+  document.getElementById('loading').style.display='none';
+  document.getElementById('last-updated').textContent='Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
 }
 
 function renderDispatch(rows) {
-  const divs     = rows.filter(r => r['Name'] && r['Name'].trim());
-  const totalRow = divs.find(r => !r['Name'].includes(':')) || divs[divs.length-1];
-  const dataRows = divs.filter(r => r['Name'].includes(':') || r['Name'].toLowerCase().includes('hvac'));
+  const divs     = rows.filter(r=>r['Name']&&r['Name'].trim());
+  const totalRow = divs.find(r=>!r['Name'].includes(':'))||divs[divs.length-1];
+  const dataRows = divs.filter(r=>r['Name'].includes(':')||r['Name'].toLowerCase().includes('hvac'));
 
-  const totalRevenue   = dataRows.reduce((s,r) => s + parseFloat(String(r['Completed Revenue']||'0').replace(/[$,]/g,'')), 0);
-  const totalOpps      = dataRows.reduce((s,r) => s + parseFloat(r['Opportunity']||0), 0);
-  const totalConverted = dataRows.reduce((s,r) => s + parseFloat(r['Converted Jobs']||0), 0);
-  const totalCompleted = dataRows.reduce((s,r) => s + parseFloat(r['Completed Jobs']||0), 0);
-  const totalCanceled  = dataRows.reduce((s,r) => s + parseFloat(r['Canceled Jobs']||0), 0);
+  const totalRevenue   = dataRows.reduce((s,r)=>s+parseFloat(String(r['Completed Revenue']||'0').replace(/[$,]/g,'')),0);
+  const totalOpps      = dataRows.reduce((s,r)=>s+parseFloat(r['Opportunity']||0),0);
+  const totalConverted = dataRows.reduce((s,r)=>s+parseFloat(r['Converted Jobs']||0),0);
+  const totalCompleted = dataRows.reduce((s,r)=>s+parseFloat(r['Completed Jobs']||0),0);
+  const totalCanceled  = dataRows.reduce((s,r)=>s+parseFloat(r['Canceled Jobs']||0),0);
 
-  document.getElementById('dispatch-stats').innerHTML = `
-    <div class="kpi orange"><div class="kpi-label">MTD Revenue</div><div class="kpi-val accent">${fmt$(totalRevenue)}</div><div class="kpi-sub">Completed jobs</div></div>
+  document.getElementById('header-meta').textContent=`${dataRows.length} Divisions · ${totalCompleted} Completed Jobs`;
+
+  document.getElementById('kpi-row').innerHTML=`
+    <div class="kpi"><div class="kpi-label">MTD Revenue</div><div class="kpi-val orange">${fmt$(totalRevenue)}</div><div class="kpi-sub">Completed jobs</div></div>
     <div class="kpi blue"><div class="kpi-label">Total Opportunities</div><div class="kpi-val">${totalOpps}</div><div class="kpi-sub">This month</div></div>
     <div class="kpi green"><div class="kpi-label">Converted Jobs</div><div class="kpi-val green">${totalConverted}</div><div class="kpi-sub">Of ${totalOpps} opportunities</div></div>
     <div class="kpi"><div class="kpi-label">Completed Jobs</div><div class="kpi-val">${totalCompleted}</div><div class="kpi-sub">&nbsp;</div></div>
-    <div class="kpi"><div class="kpi-label">Canceled Jobs</div><div class="kpi-val" style="color:var(--warning)">${totalCanceled}</div><div class="kpi-sub">&nbsp;</div></div>
+    <div class="kpi warn"><div class="kpi-label">Canceled Jobs</div><div class="kpi-val warn">${totalCanceled}</div><div class="kpi-sub">&nbsp;</div></div>
   `;
 
-  // Key metrics per division
-  document.getElementById('metrics-grid').innerHTML = dataRows.map(r => {
+  document.getElementById('metrics-grid').innerHTML = dataRows.map(r=>{
     const name = r['Name'].trim().replace('HVAC Residential:','').trim();
     const metrics = [
-      { label:'WIP Jobs',     value: r['WIP Jobs']||'—',                      color:'var(--text)' },
-      { label:'Zero $ Jobs',  value: r['Zero Dollar Jobs']||'—',              color:'var(--warning)' },
-      { label:'Recalls',      value: r['Recall Jobs']||'—',                   color:'var(--warning)' },
-      { label:'Returns',      value: r['Returns']||'—',                       color:'var(--warning)' },
-      { label:'Gross Margin', value: r['Gross Margin %']||'—',                color:'var(--success)' },
-      { label:'Cost %',       value: r['Actual Costs as % of Sales']||'—',    color:'#A78BFA' },
-      { label:'No Charge',    value: r['No Charge Jobs']||'—',                color:'var(--text-secondary)' },
+      {label:'WIP Jobs',    value:r['WIP Jobs']||'—',                   color:'var(--text)'},
+      {label:'Zero $ Jobs', value:r['Zero Dollar Jobs']||'—',           color:'var(--bad)'},
+      {label:'Recalls',     value:r['Recall Jobs']||'—',                color:'var(--warn)'},
+      {label:'Returns',     value:r['Returns']||'—',                    color:'var(--bad)'},
+      {label:'Gross Margin',value:r['Gross Margin %']||'—',             color:'var(--good)'},
+      {label:'Cost %',      value:r['Actual Costs as % of Sales']||'—', color:'#A78BFA'},
+      {label:'No Charge',   value:r['No Charge Jobs']||'—',             color:'var(--text-dim)'},
     ];
-    return `<div class="metrics-division">
-      <div class="metrics-div-name">${name}</div>
+    return `<div class="div-block">
+      <div class="div-name">${name}</div>
       <div class="metrics-row">
-        ${metrics.map(m => `<div class="metric-item">
-          <div class="metric-item-label">${m.label}</div>
-          <div class="metric-item-value" style="color:${m.color}">${m.value}</div>
+        ${metrics.map(m=>`<div class="metric-item">
+          <div class="metric-label">${m.label}</div>
+          <div class="metric-val" style="color:${m.color}">${m.value}</div>
         </div>`).join('')}
       </div>
     </div>`;
   }).join('');
 
-  document.getElementById('table-body').innerHTML = dataRows.map(r => `
+  document.getElementById('table-body').innerHTML = dataRows.map(r=>`
     <tr>
       <td class="name-cell">${r['Name'].trim()}</td>
-      <td style="color:var(--warning);font-weight:500">${r['Canceled Jobs']||'-'}</td>
-      <td style="font-weight:600;color:var(--accent)">${fmt$(r['Completed Revenue'])}</td>
+      <td class="warn">${r['Canceled Jobs']||'-'}</td>
+      <td class="orange">${fmt$(r['Completed Revenue'])}</td>
       <td>${fmt$(r['Current Weekly Pace'])}</td>
       <td>${fmt$(r['Current Monthly Pace'])}</td>
       <td>${fmt$(r['Current Yearly Pace'])}</td>
@@ -212,7 +224,7 @@ function renderDispatch(rows) {
 }
 
 loadData();
-setInterval(loadData, 60 * 60 * 1000);
+setInterval(loadData,60*60*1000);
 </script>
 </body>
 </html>
