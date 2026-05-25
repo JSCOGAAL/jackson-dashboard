@@ -5,7 +5,6 @@
 <title>Jackson Services | Sales Rep Performance</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root {
     --orange: #E8600A; --orange-light: #FF7A20; --orange-dim: rgba(232,96,10,0.15);
@@ -64,20 +63,20 @@
   .kpi-sub { font-size: clamp(10px,1.1vh,14px); color: var(--text-muted); margin-top: 0.2vh; font-weight: 600; }
 
   /* BODY GRID */
-  .body-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6vw; overflow: hidden; min-height: 0; }
+  .body-grid { display: grid; grid-template-columns: 1fr; gap: 0.6vw; overflow: hidden; min-height: 0; }
   .section { background: var(--card-bg); border: 1px solid var(--border); backdrop-filter: blur(6px); overflow: hidden; display: flex; flex-direction: column; min-height: 0; }
   .sec-header { display: flex; align-items: center; justify-content: space-between; padding: 0.7vh 1vw; border-bottom: 1px solid var(--border); flex-shrink: 0; }
   .sec-title { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(13px,1.8vh,24px); font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; }
   .sec-badge { font-size: clamp(10px,1.1vh,14px); letter-spacing: 0.1em; text-transform: uppercase; color: var(--orange); background: var(--orange-dim); padding: 3px 10px; font-weight: 700; }
 
   /* TABLE */
-  .table-wrap { overflow: hidden; flex: 1; }
+  .table-wrap { overflow: hidden; flex: 1; display: flex; flex-direction: column; }
   table { width: 100%; border-collapse: collapse; }
   thead th { font-size: clamp(10px,1.2vh,15px); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); font-weight: 800; padding: 0.5vh 0.8vw; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
   tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); }
   tbody tr:hover { background: rgba(232,96,10,0.05); }
   tbody tr:last-child { border-bottom: none; }
-  tbody td { padding: 0.65vh 0.8vw; font-size: clamp(13px,1.8vh,24px); color: var(--text-dim); font-weight: 500; white-space: nowrap; }
+  tbody td { padding: 2vh 0.8vw; font-size: clamp(13px,1.8vh,24px); color: var(--text-dim); font-weight: 500; white-space: nowrap; }
   td.name-cell { font-weight: 700; color: var(--text); font-size: clamp(13px,1.8vh,24px); }
   td.val-cell { font-weight: 900; color: var(--text); }
   td.orange { color: var(--orange); font-weight: 900; }
@@ -88,8 +87,6 @@
   .pill-bad  { background: rgba(231,76,60,0.12); color: var(--bad); }
 
   /* CHARTS SECTION */
-  .charts-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6vw; flex: 1; padding: 0.8vh 0.8vw; overflow: hidden; }
-  .chart-wrap { position: relative; }
 
   footer { display: flex; align-items: center; justify-content: space-between; padding-top: 0.5vh; border-top: 1px solid var(--border); flex-shrink: 0; }
   .foot-l { font-size: clamp(10px,1.1vh,14px); color: var(--text-muted); letter-spacing: 0.06em; font-weight: 600; }
@@ -154,12 +151,6 @@
         </table>
       </div>
     </div>
-    <div class="section">
-      <div class="sec-header"><span class="sec-title">Sales &amp; Close Rate</span><span class="sec-badge">By Rep</span></div>
-      <div class="charts-inner">
-        <div class="chart-wrap"><canvas id="salesChart"></canvas></div>
-        <div class="chart-wrap"><canvas id="closeRateChart"></canvas></div>
-      </div>
     </div>
   </div>
 
@@ -172,8 +163,6 @@
 <script>
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0NT7lEqqpwrkgoy6vcIuFkgmUA979edn_-ufgaxcbcIQsyho4vTVPGXlA9C1zXEGz-A3Ysy95y1xy/pub?gid=0&single=true&output=csv';
 const GOAL = 675000;
-let salesChart, closeRateChart;
-const COLORS = ['#E8600A','#1a5fa8','#2ECC71','#F39C12','#9b59b6','#E74C3C'];
 
 function fmt$(v) {
   const n = parseFloat(String(v).replace(/[$,%]/g,''));
@@ -188,7 +177,6 @@ function pctPill(v) {
   if (n>=50) return `<span class="pill pill-warn">${fmtPct(v)}</span>`;
   return `<span class="pill pill-bad">${fmtPct(v)}</span>`;
 }
-function destroyChart(c) { if(c) c.destroy(); }
 
 async function fetchCSV(url) {
   try { const r = await fetch(url); if(r.ok) return await r.text(); } catch(e) {}
@@ -247,27 +235,6 @@ function renderSales(rows) {
       <td>${fmt$(r['Total Sales from Marketing Leads'])}</td>
       <td>${r['WIP Jobs']||'-'}</td>
     </tr>`).join('');
-
-  // Charts
-  const names=reps.map(r=>r['Name'].trim().split(' ')[0]);
-  const sales=reps.map(r=>parseFloat(String(r['Total Sales']||'0').replace(/[$,]/g,'')));
-  const rates=reps.map(r=>parseFloat(String(r['Close Rate']||'0').replace('%','')));
-
-  destroyChart(salesChart);
-  salesChart=new Chart(document.getElementById('salesChart'),{
-    type:'bar', data:{labels:names,datasets:[{data:sales,backgroundColor:COLORS,borderRadius:4}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+fmt$(ctx.raw)}}},
-      scales:{x:{grid:{display:false},ticks:{color:'#9DB0CC',font:{size:11,family:'Barlow'}}},
-        y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#9DB0CC',font:{size:10,family:'Barlow'},callback:v=>'$'+(v/1000).toFixed(0)+'k'}}}}
-  });
-
-  destroyChart(closeRateChart);
-  closeRateChart=new Chart(document.getElementById('closeRateChart'),{
-    type:'bar', data:{labels:names,datasets:[{data:rates,backgroundColor:COLORS,borderRadius:4}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+ctx.raw.toFixed(1)+'%'}}},
-      scales:{x:{grid:{display:false},ticks:{color:'#9DB0CC',font:{size:11,family:'Barlow'}}},
-        y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#9DB0CC',font:{size:10,family:'Barlow'},callback:v=>v+'%'}}}}
-  });
 }
 
 loadData();
