@@ -27,10 +27,11 @@
     position: relative; z-index: 1;
     width: 100%; height: 100vh;
     display: grid;
-    grid-template-rows: auto auto auto 1fr auto;
+    grid-template-rows: auto auto 1fr auto;
     padding: 1vh 1.2vw; gap: 0.8vh;
   }
 
+  /* HEADER */
   header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.6vh; border-bottom: 1px solid var(--border); }
   .brand { display: flex; align-items: center; gap: 1vw; }
   .brand-mark { width: 5.5vh; height: 5.5vh; background: var(--orange); display: flex; align-items: center; justify-content: center; clip-path: polygon(0 0, 85% 0, 100% 15%, 100% 100%, 15% 100%, 0 85%); flex-shrink: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: clamp(14px,2vh,24px); color: white; }
@@ -40,8 +41,9 @@
   .mtd-badge { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(18px,2.6vh,36px); font-weight: 900; color: var(--orange); letter-spacing: 0.08em; text-transform: uppercase; }
   .header-meta { text-align: right; font-size: clamp(11px,1.3vh,17px); color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; line-height: 1.6; font-weight: 600; }
 
-  /* KPI ROW */
-  .kpi-row { display: grid; grid-template-columns: 2fr repeat(4,1fr); gap: 0.6vw; }
+  /* TOP ROW — goal + 4 KPIs */
+  .top-row { display: grid; grid-template-columns: 2.2fr 1fr 1fr 1fr 1fr; gap: 0.6vw; }
+
   .kpi { background: var(--card-bg); border: 1px solid var(--border); border-top: 4px solid var(--orange); padding: 1vh 1vw; backdrop-filter: blur(6px); }
   .kpi.green { border-top-color: var(--good); }
   .kpi.blue  { border-top-color: #1a5fa8; }
@@ -53,6 +55,18 @@
   .kpi-val.warn   { color: var(--warn); }
   .kpi-sub { font-size: clamp(10px,1.1vh,14px); color: var(--text-muted); margin-top: 0.2vh; font-weight: 600; }
 
+  /* GOAL CARD */
+  .goal-card { background: var(--card-bg); border: 1px solid var(--border); border-top: 4px solid var(--good); padding: 1vh 1.2vw; backdrop-filter: blur(6px); display: flex; flex-direction: column; justify-content: space-between; }
+  .goal-top { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 0.5vh; }
+  .goal-block .g-label { font-size: clamp(10px,1.2vh,15px); letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.2vh; font-weight: 700; }
+  .goal-block .g-val { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(22px,3.8vh,52px); font-weight: 900; line-height: 1; }
+  .goal-block .g-val.orange { color: var(--orange); }
+  .goal-block .g-val.muted  { color: var(--text-muted); font-size: clamp(16px,2.6vh,36px); }
+  .g-pct { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(22px,3.8vh,52px); font-weight: 900; line-height: 1; }
+  .goal-bar-track { width: 100%; height: 10px; background: rgba(255,255,255,0.07); border-radius: 5px; overflow: hidden; margin-bottom: 0.3vh; }
+  .goal-bar-fill { height: 100%; background: linear-gradient(90deg, var(--orange), #FF9A50); border-radius: 5px; }
+  .goal-info { display: flex; justify-content: space-between; font-size: clamp(10px,1.1vh,14px); color: var(--text-muted); font-weight: 600; }
+
   /* BODY */
   .body-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6vw; overflow: hidden; min-height: 0; }
   .section { background: var(--card-bg); border: 1px solid var(--border); backdrop-filter: blur(6px); overflow: hidden; display: flex; flex-direction: column; min-height: 0; }
@@ -60,47 +74,40 @@
   .sec-title { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(13px,1.8vh,24px); font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; }
   .sec-badge { font-size: clamp(10px,1.1vh,14px); letter-spacing: 0.1em; text-transform: uppercase; color: var(--orange); background: var(--orange-dim); padding: 3px 10px; font-weight: 700; }
 
+  /* KEY METRICS */
+  .metrics-wrap { flex: 1; overflow: hidden; padding: 0.8vh 0.8vw; display: flex; flex-direction: column; justify-content: space-evenly; gap: 0.6vh; }
+  .div-block { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .div-name { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(14px,2vh,28px); font-weight: 900; color: var(--orange); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5vh; }
+  .metrics-row { display: grid; grid-template-columns: repeat(7,1fr); gap: 0.4vw; flex: 1; }
+  .metric-item { background: rgba(255,255,255,0.04); border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0.6vh 0.2vw; }
+  .metric-label { font-size: clamp(9px,1.1vh,14px); text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 0.4vh; font-weight: 700; text-align: center; }
+  .metric-val { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(18px,3vh,42px); font-weight: 900; line-height: 1; text-align: center; }
+  .div-divider { height: 1px; background: var(--border); flex-shrink: 0; }
+
   /* TABLE */
   .table-wrap { overflow: hidden; flex: 1; }
-  table { width: 100%; border-collapse: collapse; }
-  thead th { font-size: clamp(11px,1.4vh,18px); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); font-weight: 800; padding: 0.8vh 0.8vw; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  thead th { font-size: clamp(10px,1.2vh,15px); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); font-weight: 800; padding: 0.6vh 0.6vw; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; overflow: hidden; }
   tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); }
   tbody tr:hover { background: rgba(232,96,10,0.05); }
   tbody tr:last-child { border-bottom: none; }
-  tbody td { padding: 1.4vh 0.8vw; font-size: clamp(15px,2.2vh,30px); color: var(--text-dim); font-weight: 500; white-space: nowrap; }
-  td.name-cell { font-weight: 700; color: var(--text); font-size: clamp(15px,2.2vh,30px); }
-  td.orange { color: var(--orange); font-weight: 900; font-size: clamp(15px,2.2vh,30px); }
+  tbody td { padding: 2.5vh 0.6vw; font-size: clamp(14px,2vh,28px); color: var(--text-dim); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  td.name-cell { font-weight: 700; color: var(--text); font-size: clamp(14px,2vh,28px); }
+  td.orange { color: var(--orange); font-weight: 900; }
   td.warn { color: var(--warn); font-weight: 700; }
 
-  /* METRICS */
-  .metrics-wrap { flex: 1; overflow: hidden; padding: 0.8vh 0.8vw; display: flex; flex-direction: column; justify-content: space-evenly; }
-  .div-block { }
-  .div-name { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(14px,2vh,28px); font-weight: 900; color: var(--orange); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.6vh; }
-  .metrics-row { display: grid; grid-template-columns: repeat(7,1fr); gap: 0.4vw; }
-  .metric-item { background: rgba(255,255,255,0.04); border: 1px solid var(--border); padding: 1.2vh 0.3vw; text-align: center; }
-  .metric-label { font-size: clamp(10px,1.2vh,15px); text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 0.4vh; font-weight: 700; }
-  .metric-val { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(20px,3.2vh,44px); font-weight: 900; line-height: 1; }
-
+  /* FOOTER */
   footer { display: flex; align-items: center; justify-content: space-between; padding-top: 0.5vh; border-top: 1px solid var(--border); flex-shrink: 0; }
   .foot-l { font-size: clamp(10px,1.1vh,14px); color: var(--text-muted); letter-spacing: 0.06em; font-weight: 600; }
   .foot-r { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(12px,1.4vh,18px); font-weight: 800; color: var(--orange); letter-spacing: 0.06em; text-transform: uppercase; }
 
+  /* LOADING */
   #loading { position: fixed; inset: 0; background: var(--navy); z-index: 200; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 2vh; }
   #loading h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 5vh; font-weight: 900; color: var(--orange); letter-spacing: 0.1em; }
   #loading p { font-size: 1.5vh; color: var(--text-muted); letter-spacing: 0.12em; text-transform: uppercase; }
   .load-bar { width: 20vw; height: 3px; background: rgba(255,255,255,0.07); border-radius: 2px; overflow: hidden; }
   .load-bar-fill { width: 40%; height: 100%; background: var(--orange); border-radius: 2px; animation: pulse 1.2s ease-in-out infinite; }
-  @keyframes pulse { 0% { transform: translateX(-150%); } 100% { transform: translateX(350%); } }
-
-  .kpi-goal { background: var(--card-bg); border: 1px solid var(--border); border-top: 4px solid var(--good); padding: 1vh 1vw; backdrop-filter: blur(6px); }
-  .goal-row-inner { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 0.4vh; }
-  .goal-val-lg { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(22px,3.8vh,52px); font-weight: 900; line-height: 1; }
-  .goal-val-lg.orange { color: var(--orange); }
-  .goal-val-lg.muted  { color: var(--text-muted); font-size: clamp(16px,2.4vh,34px); }
-  .goal-pct-lg { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(22px,3.8vh,52px); font-weight: 900; line-height: 1; }
-  .goal-bar-track { width: 100%; height: 8px; background: rgba(255,255,255,0.07); border-radius: 4px; overflow: hidden; margin-bottom: 0.3vh; }
-  .goal-bar-fill { height: 100%; background: linear-gradient(90deg, var(--orange), #FF9A50); border-radius: 4px; }
-  .goal-info-row { display: flex; justify-content: space-between; font-size: clamp(10px,1.1vh,14px); color: var(--text-muted); font-weight: 600; }
+  @keyframes pulse { 0%{transform:translateX(-150%)} 100%{transform:translateX(350%)} }
 </style>
 </head>
 <body>
@@ -126,28 +133,22 @@
     </div>
   </header>
 
-  <!-- GOAL -->
-  <div class="kpi-goal">
-    <div class="goal-row-inner">
-      <div>
-        <div class="kpi-label">MTD Revenue</div>
-        <div class="goal-val-lg orange" id="goal-actual">—</div>
+  <!-- TOP ROW: Goal + KPIs -->
+  <div class="top-row">
+    <div class="goal-card">
+      <div class="goal-top">
+        <div class="goal-block"><div class="g-label">MTD Revenue</div><div class="g-val orange" id="goal-actual">—</div></div>
+        <div class="goal-block" style="text-align:center"><div class="g-label">Progress to Goal</div><div class="g-pct" id="goal-pct">—</div></div>
+        <div class="goal-block" style="text-align:right"><div class="g-label">Monthly Goal</div><div class="g-val muted">$675,000</div></div>
       </div>
-      <div style="text-align:center">
-        <div class="kpi-label">Progress to Goal</div>
-        <div class="goal-pct-lg" id="goal-pct">—</div>
-      </div>
-      <div style="text-align:right">
-        <div class="kpi-label">Monthly Goal</div>
-        <div class="goal-val-lg muted" id="goal-target">—</div>
-      </div>
+      <div class="goal-bar-track"><div class="goal-bar-fill" id="goal-bar" style="width:0%"></div></div>
+      <div class="goal-info"><span>$0</span><span id="goal-remaining"></span><span>$675,000</span></div>
     </div>
-    <div class="goal-bar-track"><div class="goal-bar-fill" id="goal-bar" style="width:0%"></div></div>
-    <div class="goal-info-row"><span>$0</span><span id="goal-remaining"></span><span id="goal-target-label">—</span></div>
+    <div class="kpi blue"><div class="kpi-label">Total Opportunities</div><div class="kpi-val" id="v-opps">—</div><div class="kpi-sub">This month</div></div>
+    <div class="kpi green"><div class="kpi-label">Converted Jobs</div><div class="kpi-val green" id="v-conv">—</div><div class="kpi-sub" id="v-conv-sub">—</div></div>
+    <div class="kpi"><div class="kpi-label">Completed Jobs</div><div class="kpi-val" id="v-comp">—</div><div class="kpi-sub">&nbsp;</div></div>
+    <div class="kpi warn"><div class="kpi-label">Canceled Jobs</div><div class="kpi-val warn" id="v-cancel">—</div><div class="kpi-sub">&nbsp;</div></div>
   </div>
-
-  <!-- KPI ROW -->
-  <div class="kpi-row" id="kpi-row"></div>
 
   <!-- BODY -->
   <div class="body-grid">
@@ -159,8 +160,13 @@
       <div class="sec-header"><span class="sec-title">Division Detail</span><span class="sec-badge">Pacing &amp; Revenue</span></div>
       <div class="table-wrap">
         <table>
+          <colgroup>
+            <col style="width:28%"><col style="width:10%"><col style="width:16%">
+            <col style="width:15%"><col style="width:16%"><col style="width:15%">
+          </colgroup>
           <thead><tr>
-            <th>Division</th><th>Canceled</th><th>Revenue</th><th>Weekly Pace</th><th>Monthly Pace</th><th>Yearly Pace</th><th>Crew Days</th>
+            <th>Division</th><th>Canceled</th><th>Revenue</th>
+            <th>Weekly Pace</th><th>Monthly Pace</th><th>Yearly Pace</th>
           </tr></thead>
           <tbody id="table-body"></tbody>
         </table>
@@ -183,7 +189,7 @@ const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0NT7lEqqpwr
 
 function fmt$(v) {
   const n = parseFloat(String(v).replace(/[$,%]/g,''));
-  if (isNaN(n)) return v;
+  if (isNaN(n)) return v || '—';
   return '$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 
@@ -203,7 +209,6 @@ async function loadData() {
 
 function renderDispatch(rows) {
   const divs     = rows.filter(r=>r['Name']&&r['Name'].trim());
-  const totalRow = divs.find(r=>!r['Name'].includes(':'))||divs[divs.length-1];
   const dataRows = divs.filter(r=>r['Name'].includes(':')||r['Name'].toLowerCase().includes('hvac'));
 
   const totalRevenue   = dataRows.reduce((s,r)=>s+parseFloat(String(r['Completed Revenue']||'0').replace(/[$,]/g,'')),0);
@@ -212,31 +217,28 @@ function renderDispatch(rows) {
   const totalCompleted = dataRows.reduce((s,r)=>s+parseFloat(r['Completed Jobs']||0),0);
   const totalCanceled  = dataRows.reduce((s,r)=>s+parseFloat(r['Canceled Jobs']||0),0);
 
-
-  // Goal progress
-  const goalPct = Math.min((totalRevenue / MONTHLY_GOAL) * 100, 100);
-  const remaining = MONTHLY_GOAL - totalRevenue;
-  const pctColor = goalPct >= 100 ? 'var(--good)' : goalPct >= 75 ? 'var(--warn)' : 'var(--bad)';
-  document.getElementById('goal-actual').textContent = fmt$(totalRevenue);
-  document.getElementById('goal-pct').textContent = goalPct.toFixed(1) + '%';
-  document.getElementById('goal-pct').style.color = pctColor;
-  document.getElementById('goal-bar').style.width = goalPct + '%';
-  document.getElementById('goal-target').textContent = fmt$(MONTHLY_GOAL);
-  document.getElementById('goal-remaining').textContent = remaining > 0 ? fmt$(remaining) + ' remaining' : '🎉 Goal reached!';
-  document.getElementById('goal-remaining').style.color = pctColor;
-  document.getElementById('goal-target-label').textContent = fmt$(MONTHLY_GOAL);
-
   document.getElementById('header-meta').textContent=`${dataRows.length} Divisions · ${totalCompleted} Completed Jobs`;
 
-  document.getElementById('kpi-row').innerHTML=`
-    <div class="kpi"><div class="kpi-label">MTD Revenue</div><div class="kpi-val orange">${fmt$(totalRevenue)}</div><div class="kpi-sub">Completed jobs</div></div>
-    <div class="kpi blue"><div class="kpi-label">Total Opportunities</div><div class="kpi-val">${totalOpps}</div><div class="kpi-sub">This month</div></div>
-    <div class="kpi green"><div class="kpi-label">Converted Jobs</div><div class="kpi-val green">${totalConverted}</div><div class="kpi-sub">Of ${totalOpps} opportunities</div></div>
-    <div class="kpi"><div class="kpi-label">Completed Jobs</div><div class="kpi-val">${totalCompleted}</div><div class="kpi-sub">&nbsp;</div></div>
-    <div class="kpi warn"><div class="kpi-label">Canceled Jobs</div><div class="kpi-val warn">${totalCanceled}</div><div class="kpi-sub">&nbsp;</div></div>
-  `;
+  // Goal
+  const goalPct = Math.min((totalRevenue/MONTHLY_GOAL)*100,100);
+  const remaining = MONTHLY_GOAL - totalRevenue;
+  const pctColor = goalPct>=100?'var(--good)':goalPct>=75?'var(--warn)':'var(--bad)';
+  document.getElementById('goal-actual').textContent = fmt$(totalRevenue);
+  document.getElementById('goal-pct').textContent = goalPct.toFixed(1)+'%';
+  document.getElementById('goal-pct').style.color = pctColor;
+  document.getElementById('goal-bar').style.width = goalPct+'%';
+  document.getElementById('goal-remaining').textContent = remaining>0?fmt$(remaining)+' remaining':'🎉 Goal reached!';
+  document.getElementById('goal-remaining').style.color = pctColor;
 
-  document.getElementById('metrics-grid').innerHTML = dataRows.map(r=>{
+  // KPIs
+  document.getElementById('v-opps').textContent = totalOpps;
+  document.getElementById('v-conv').textContent = totalConverted;
+  document.getElementById('v-conv-sub').textContent = `Of ${totalOpps} opportunities`;
+  document.getElementById('v-comp').textContent = totalCompleted;
+  document.getElementById('v-cancel').textContent = totalCanceled;
+
+  // Key metrics per division
+  document.getElementById('metrics-grid').innerHTML = dataRows.map((r,i)=>{
     const name = r['Name'].trim().replace('HVAC Residential:','').trim();
     const metrics = [
       {label:'WIP Jobs',    value:r['WIP Jobs']||'—',                   color:'var(--text)'},
@@ -247,17 +249,20 @@ function renderDispatch(rows) {
       {label:'Cost %',      value:r['Actual Costs as % of Sales']||'—', color:'#A78BFA'},
       {label:'No Charge',   value:r['No Charge Jobs']||'—',             color:'var(--text-dim)'},
     ];
-    return `<div class="div-block">
-      <div class="div-name">${name}</div>
-      <div class="metrics-row">
-        ${metrics.map(m=>`<div class="metric-item">
-          <div class="metric-label">${m.label}</div>
-          <div class="metric-val" style="color:${m.color}">${m.value}</div>
-        </div>`).join('')}
-      </div>
-    </div>`;
+    return `
+      ${i>0?'<div class="div-divider"></div>':''}
+      <div class="div-block">
+        <div class="div-name">${name}</div>
+        <div class="metrics-row">
+          ${metrics.map(m=>`<div class="metric-item">
+            <div class="metric-label">${m.label}</div>
+            <div class="metric-val" style="color:${m.color}">${m.value}</div>
+          </div>`).join('')}
+        </div>
+      </div>`;
   }).join('');
 
+  // Table
   document.getElementById('table-body').innerHTML = dataRows.map(r=>`
     <tr>
       <td class="name-cell">${r['Name'].trim()}</td>
@@ -266,7 +271,6 @@ function renderDispatch(rows) {
       <td>${fmt$(r['Current Weekly Pace'])}</td>
       <td>${fmt$(r['Current Monthly Pace'])}</td>
       <td>${fmt$(r['Current Yearly Pace'])}</td>
-      <td>${r['Crew Days']||'—'}</td>
     </tr>`).join('');
 }
 
