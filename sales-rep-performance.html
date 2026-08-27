@@ -256,7 +256,16 @@ function render(soldRows, installRows) {
   const totalOpps    = reps.reduce((s,r)=>s+parseFloat(r['Sales Opportunity']||0),0);
   const totalClosed  = reps.reduce((s,r)=>s+parseFloat(r['Closed Opportunities']||0),0);
   const closeRate    = totalOpps>0?(totalClosed/totalOpps*100).toFixed(1):0;
-  const avgSale      = totalClosed>0?totalSold/totalClosed:0;
+  // Team avg closed sale: back into each rep's true closed-deal count from
+  // their own trusted Total Sales / Closed Average Sale, rather than dividing
+  // by the sheet's "Closed Opportunities" field (which doesn't match Avg Sale
+  // per rep and inflates the team average above every individual rep).
+  const impliedClosedTotal = reps.reduce((s,r)=>{
+    const ts  = parseFloat(String(r['Total Sales']||'0').replace(/[$,]/g,''));
+    const avg = parseFloat(String(r['Closed Average Sale']||'0').replace(/[$,]/g,''));
+    return s + (avg>0 ? ts/avg : 0);
+  },0);
+  const avgSale      = impliedClosedTotal>0?totalSold/impliedClosedTotal:0;
   const totalWIP     = reps.reduce((s,r)=>s+parseFloat(r['WIP Jobs']||0),0);
 
   // ── INSTALLED SIDE ──
