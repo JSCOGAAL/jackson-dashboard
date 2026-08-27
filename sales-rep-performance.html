@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Jackson Services | Sales Rep Performance</title>
+<title>Jackson Services | Sales &amp; Install Performance</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <style>
   :root {
     --orange: #E8600A; --orange-light: #FF7A20; --orange-dim: rgba(232,96,10,0.15);
+    --blue: #1a8fe3; --blue-dim: rgba(26,143,227,0.15);
     --navy: #0F1F3D; --navy-mid: #1A2F52; --navy-light: #243A65;
     --text: #E8EDF5; --text-dim: #9DB0CC; --text-muted: #4A5F7F;
     --border: rgba(255,255,255,0.08); --card-bg: rgba(26,47,82,0.7);
@@ -28,69 +29,81 @@
     width: 100%; height: 100vh;
     display: grid;
     grid-template-rows: auto auto auto 1fr auto;
-    padding: 1vh 1.2vw; gap: 0.8vh;
+    padding: 1vh 1.2vw; gap: 0.7vh;
   }
 
-  header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.6vh; border-bottom: 1px solid var(--border); }
+  header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.5vh; border-bottom: 1px solid var(--border); }
   .brand { display: flex; align-items: center; gap: 1vw; }
-  .brand-mark { width: 5.5vh; height: 5.5vh; background: var(--orange); display: flex; align-items: center; justify-content: center; clip-path: polygon(0 0, 85% 0, 100% 15%, 100% 100%, 15% 100%, 0 85%); flex-shrink: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: clamp(14px,2vh,24px); color: white; }
-  .brand-text h1 { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(24px,3.8vh,52px); font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; line-height: 1; }
-  .brand-text p { font-size: clamp(11px,1.4vh,18px); color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 2px; font-weight: 600; }
+  .brand-mark { width: 5vh; height: 5vh; background: var(--orange); display: flex; align-items: center; justify-content: center; clip-path: polygon(0 0, 85% 0, 100% 15%, 100% 100%, 15% 100%, 0 85%); flex-shrink: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: clamp(13px,1.8vh,22px); color: white; }
+  .brand-text h1 { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(20px,3.2vh,44px); font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; line-height: 1; }
+  .brand-text p { font-size: clamp(10px,1.2vh,16px); color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 2px; font-weight: 600; }
   .header-right { display: flex; align-items: center; gap: 2vw; }
-  .mtd-badge { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(18px,2.6vh,36px); font-weight: 900; color: var(--orange); letter-spacing: 0.08em; text-transform: uppercase; }
-  .header-meta { text-align: right; font-size: clamp(11px,1.3vh,17px); color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; line-height: 1.6; font-weight: 600; }
+  .mtd-badge { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(16px,2.2vh,30px); font-weight: 900; color: var(--orange); letter-spacing: 0.08em; text-transform: uppercase; }
+  .header-meta { text-align: right; font-size: clamp(10px,1.1vh,15px); color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; line-height: 1.5; font-weight: 600; }
 
-  /* GOAL BAR */
-  .goal-card { background: var(--card-bg); border: 1px solid var(--border); border-top: 4px solid var(--good); padding: 1vh 1.2vw; backdrop-filter: blur(6px); }
-  .goal-top { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 0.6vh; }
-  .goal-block .goal-label { font-size: clamp(10px,1.2vh,15px); letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 0.2vh; }
-  .goal-block .goal-val { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(24px,4vh,54px); font-weight: 900; line-height: 1; }
-  .goal-block .goal-val.orange { color: var(--orange); }
-  .goal-block .goal-val.muted { color: var(--text-muted); }
-  .goal-pct { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(24px,4vh,54px); font-weight: 900; line-height: 1; }
-  .goal-bar-track { width: 100%; height: 10px; background: rgba(255,255,255,0.07); border-radius: 5px; overflow: hidden; margin-bottom: 0.3vh; }
-  .goal-bar-fill { height: 100%; background: linear-gradient(90deg, var(--orange), #FF9A50); border-radius: 5px; }
-  .goal-info { display: flex; justify-content: space-between; font-size: clamp(10px,1.1vh,14px); color: var(--text-muted); font-weight: 600; }
+  /* GOAL BARS - STACKED */
+  .goals-stack { display: flex; flex-direction: column; gap: 0.5vh; }
+  .goal-card { background: var(--card-bg); border: 1px solid var(--border); padding: 0.7vh 1.2vw; backdrop-filter: blur(6px); }
+  .goal-card.sold { border-top: 4px solid var(--orange); }
+  .goal-card.installed { border-top: 4px solid var(--blue); }
+  .goal-top { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 0.4vh; }
+  .goal-block .goal-label { font-size: clamp(9px,1.05vh,14px); letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 0.15vh; }
+  .goal-block .goal-val { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(20px,3.2vh,42px); font-weight: 900; line-height: 1; }
+  .goal-val.orange { color: var(--orange); }
+  .goal-val.blue { color: var(--blue); }
+  .goal-val.muted { color: var(--text-muted); font-size: clamp(14px,2.2vh,28px); }
+  .goal-pct { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(20px,3.2vh,42px); font-weight: 900; line-height: 1; }
+  .goal-bar-track { width: 100%; height: 8px; background: rgba(255,255,255,0.07); border-radius: 4px; overflow: hidden; margin-bottom: 0.25vh; }
+  .goal-bar-fill { height: 100%; border-radius: 4px; }
+  .goal-bar-fill.orange { background: linear-gradient(90deg, var(--orange), #FF9A50); }
+  .goal-bar-fill.blue { background: linear-gradient(90deg, var(--blue), #6FC6FF); }
+  .goal-info { display: flex; justify-content: space-between; font-size: clamp(9px,1vh,13px); color: var(--text-muted); font-weight: 600; }
+  .goal-gap-note { text-align: right; font-size: clamp(9px,1vh,13px); font-weight: 700; margin-top: 0.15vh; }
 
   /* KPI ROW */
-  .kpi-row { display: grid; grid-template-columns: repeat(5,1fr); gap: 0.6vw; }
-  .kpi { background: var(--card-bg); border: 1px solid var(--border); border-top: 4px solid var(--orange); padding: 1vh 1vw; backdrop-filter: blur(6px); }
+  .kpi-row { display: grid; grid-template-columns: repeat(6,1fr); gap: 0.5vw; }
+  .kpi { background: var(--card-bg); border: 1px solid var(--border); border-top: 4px solid var(--orange); padding: 0.8vh 0.8vw; backdrop-filter: blur(6px); }
   .kpi.green { border-top-color: var(--good); }
-  .kpi-label { font-size: clamp(10px,1.2vh,15px); letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.3vh; font-weight: 700; }
-  .kpi-val { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(22px,3.8vh,52px); font-weight: 900; line-height: 1; color: var(--text); }
+  .kpi.blue { border-top-color: var(--blue); }
+  .kpi.warn { border-top-color: var(--warn); }
+  .kpi-label { font-size: clamp(9px,1.05vh,14px); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.25vh; font-weight: 700; }
+  .kpi-val { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(18px,3.1vh,42px); font-weight: 900; line-height: 1; color: var(--text); }
   .kpi-val.orange { color: var(--orange); }
   .kpi-val.green { color: var(--good); }
-  .kpi-sub { font-size: clamp(10px,1.1vh,14px); color: var(--text-muted); margin-top: 0.2vh; font-weight: 600; }
+  .kpi-val.blue { color: var(--blue); }
+  .kpi-val.warn { color: var(--warn); }
+  .kpi-sub { font-size: clamp(9px,0.95vh,13px); color: var(--text-muted); margin-top: 0.15vh; font-weight: 600; }
 
   /* BODY GRID */
-  .body-grid { display: grid; grid-template-columns: 1fr; gap: 0.6vw; overflow: hidden; min-height: 0; }
+  .body-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 0.5vw; overflow: hidden; min-height: 0; }
   .section { background: var(--card-bg); border: 1px solid var(--border); backdrop-filter: blur(6px); overflow: hidden; display: flex; flex-direction: column; min-height: 0; }
-  .sec-header { display: flex; align-items: center; justify-content: space-between; padding: 0.7vh 1vw; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-  .sec-title { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(13px,1.8vh,24px); font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; }
-  .sec-badge { font-size: clamp(10px,1.1vh,14px); letter-spacing: 0.1em; text-transform: uppercase; color: var(--orange); background: var(--orange-dim); padding: 3px 10px; font-weight: 700; }
+  .sec-header { display: flex; align-items: center; justify-content: space-between; padding: 0.6vh 1vw; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .sec-title { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(12px,1.6vh,22px); font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; }
+  .sec-badge { font-size: clamp(9px,1vh,13px); letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 10px; font-weight: 700; }
+  .sec-badge.orange { color: var(--orange); background: var(--orange-dim); }
+  .sec-badge.blue { color: var(--blue); background: var(--blue-dim); }
 
   /* TABLE */
   .table-wrap { overflow: hidden; flex: 1; display: flex; flex-direction: column; }
-  table { width: 100%; border-collapse: collapse; }
-  thead th { font-size: clamp(12px,1.6vh,20px); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); font-weight: 800; padding: 0.8vh 0.8vw; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  thead th { font-size: clamp(10px,1.3vh,17px); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); font-weight: 800; padding: 0.6vh 0.6vw; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; overflow: hidden; }
   tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); }
   tbody tr:hover { background: rgba(232,96,10,0.05); }
   tbody tr:last-child { border-bottom: none; }
-  tbody td { padding: 1.2vh 0.8vw; font-size: clamp(18px,2.8vh,38px); color: var(--text-dim); font-weight: 500; white-space: nowrap; }
-  td.name-cell { font-weight: 700; color: var(--text); font-size: clamp(18px,2.8vh,38px); }
+  tbody td { padding: 0.9vh 0.6vw; font-size: clamp(13px,2vh,26px); color: var(--text-dim); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  td.name-cell { font-weight: 700; color: var(--text); font-size: clamp(13px,2vh,26px); }
   td.val-cell { font-weight: 900; color: var(--text); }
-  td.orange { color: var(--orange); font-weight: 900; font-size: clamp(18px,2.8vh,38px); }
+  td.orange { color: var(--orange); font-weight: 900; }
+  td.warn { color: var(--warn); font-weight: 700; }
 
-  .pill { display: inline-block; padding: 3px 10px; font-size: clamp(16px,2.4vh,32px); font-weight: 800; }
+  .pill { display: inline-block; padding: 2px 8px; font-size: clamp(11px,1.7vh,22px); font-weight: 800; }
   .pill-good { background: rgba(46,204,113,0.12); color: var(--good); }
   .pill-warn { background: rgba(243,156,18,0.12); color: var(--warn); }
   .pill-bad  { background: rgba(231,76,60,0.12); color: var(--bad); }
 
-  /* CHARTS SECTION */
-
-  footer { display: flex; align-items: center; justify-content: space-between; padding-top: 0.5vh; border-top: 1px solid var(--border); flex-shrink: 0; }
-  .foot-l { font-size: clamp(10px,1.1vh,14px); color: var(--text-muted); letter-spacing: 0.06em; font-weight: 600; }
-  .foot-r { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(12px,1.4vh,18px); font-weight: 800; color: var(--orange); letter-spacing: 0.06em; text-transform: uppercase; }
+  footer { display: flex; align-items: center; justify-content: space-between; padding-top: 0.4vh; border-top: 1px solid var(--border); flex-shrink: 0; }
+  .foot-l { font-size: clamp(9px,1vh,13px); color: var(--text-muted); letter-spacing: 0.06em; font-weight: 600; }
+  .foot-r { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(11px,1.3vh,17px); font-weight: 800; color: var(--orange); letter-spacing: 0.06em; text-transform: uppercase; }
 
   #loading { position: fixed; inset: 0; background: var(--navy); z-index: 200; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 2vh; }
   #loading h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 5vh; font-weight: 900; color: var(--orange); letter-spacing: 0.1em; }
@@ -104,7 +117,7 @@
 
 <div id="loading">
   <h2>JACKSON SERVICES</h2>
-  <p>Loading sales data…</p>
+  <p>Loading dashboard data…</p>
   <div class="load-bar"><div class="load-bar-fill"></div></div>
 </div>
 
@@ -114,7 +127,7 @@
       <div class="brand-mark">JS</div>
       <div class="brand-text">
         <h1>Jackson Services</h1>
-        <p>Sales Rep Performance</p>
+        <p>Sales &amp; Install Performance</p>
       </div>
     </div>
     <div class="header-right">
@@ -123,15 +136,27 @@
     </div>
   </header>
 
-  <!-- GOAL -->
-  <div class="goal-card">
-    <div class="goal-top">
-      <div class="goal-block"><div class="goal-label">Total Team Sales</div><div class="goal-val orange" id="goal-actual">—</div></div>
-      <div class="goal-block" style="text-align:center"><div class="goal-label">Progress to Goal</div><div class="goal-pct" id="goal-pct">—</div></div>
-      <div class="goal-block" style="text-align:right"><div class="goal-label">Monthly Goal</div><div class="goal-val muted" id="goal-target">$975,000</div></div>
+  <!-- STACKED GOAL BARS -->
+  <div class="goals-stack">
+    <div class="goal-card sold">
+      <div class="goal-top">
+        <div class="goal-block"><div class="goal-label">Sold This Month</div><div class="goal-val orange" id="sold-actual">—</div></div>
+        <div class="goal-block" style="text-align:center"><div class="goal-label">Progress to Goal</div><div class="goal-pct orange" id="sold-pct">—</div></div>
+        <div class="goal-block" style="text-align:right"><div class="goal-label">Monthly Goal</div><div class="goal-val muted" id="sold-goal-label">—</div></div>
+      </div>
+      <div class="goal-bar-track"><div class="goal-bar-fill orange" id="sold-bar" style="width:0%"></div></div>
+      <div class="goal-info"><span>$0</span><span id="sold-remaining"></span><span id="sold-goal-label-2">—</span></div>
     </div>
-    <div class="goal-bar-track"><div class="goal-bar-fill" id="goal-bar" style="width:0%"></div></div>
-    <div class="goal-info"><span>$0</span><span id="goal-remaining"></span><span id="goal-target-2">$975,000</span></div>
+    <div class="goal-card installed">
+      <div class="goal-top">
+        <div class="goal-block"><div class="goal-label">Installed This Month</div><div class="goal-val blue" id="install-actual">—</div></div>
+        <div class="goal-block" style="text-align:center"><div class="goal-label">Progress to Goal</div><div class="goal-pct blue" id="install-pct">—</div></div>
+        <div class="goal-block" style="text-align:right"><div class="goal-label">Monthly Goal</div><div class="goal-val muted" id="install-goal-label">—</div></div>
+      </div>
+      <div class="goal-bar-track"><div class="goal-bar-fill blue" id="install-bar" style="width:0%"></div></div>
+      <div class="goal-info"><span>$0</span><span id="install-remaining"></span><span id="install-goal-label-2">—</span></div>
+      <div class="goal-gap-note" id="sold-vs-install-gap"></div>
+    </div>
   </div>
 
   <!-- KPI ROW -->
@@ -140,33 +165,48 @@
   <!-- BODY -->
   <div class="body-grid">
     <div class="section">
-      <div class="sec-header"><span class="sec-title">Rep Detail</span><span class="sec-badge">Individual Performance</span></div>
+      <div class="sec-header"><span class="sec-title">Rep Detail</span><span class="sec-badge orange">Sold</span></div>
       <div class="table-wrap">
         <table>
           <thead><tr>
             <th>Rep</th><th>Total Sales</th><th>Opps</th><th>Close Rate</th>
-            <th>Avg Sale</th><th>TGL Sales</th><th>Mktg Sales</th><th>WIP</th>
+            <th>Avg Sale</th><th>WIP</th>
           </tr></thead>
-          <tbody id="table-body"></tbody>
+          <tbody id="rep-table-body"></tbody>
         </table>
       </div>
     </div>
+    <div class="section">
+      <div class="sec-header"><span class="sec-title">Division Detail</span><span class="sec-badge blue">Installed</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Division</th><th>Canceled</th><th>Revenue</th><th>Monthly Pace</th>
+          </tr></thead>
+          <tbody id="div-table-body"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
   <footer>
-    <div class="foot-l">Jackson Services &nbsp;·&nbsp; Sales Rep Performance &nbsp;·&nbsp; Month to Date</div>
+    <div class="foot-l">Jackson Services &nbsp;·&nbsp; Sales &amp; Install Performance &nbsp;·&nbsp; Month to Date</div>
     <div class="foot-r" id="last-updated">—</div>
   </footer>
 </div>
 
 <script>
-const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0NT7lEqqpwrkgoy6vcIuFkgmUA979edn_-ufgaxcbcIQsyho4vTVPGXlA9C1zXEGz-A3Ysy95y1xy/pub?gid=0&single=true&output=csv';
+// ─── UPDATE THIS NUMBER EACH MONTH — drives BOTH goal bars ─────────────────
 const GOAL = 975000;
+// ─────────────────────────────────────────────────────────────────────────
+
+const SHEET_BASE   = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0NT7lEqqpwrkgoy6vcIuFkgmUA979edn_-ufgaxcbcIQsyho4vTVPGXlA9C1zXEGz-A3Ysy95y1xy/pub';
+const SOLD_URL      = SHEET_BASE + '?gid=0&single=true&output=csv';
+const INSTALLED_URL = SHEET_BASE + '?gid=2025286502&single=true&output=csv';
 
 function fmt$(v) {
   const n = parseFloat(String(v).replace(/[$,%]/g,''));
-  if (isNaN(n)) return v;
+  if (isNaN(n)) return v || '—';
   return '$' + n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 function fmtPct(v) { const n = parseFloat(String(v).replace('%','')); return isNaN(n)?v:n.toFixed(1)+'%'; }
@@ -184,61 +224,93 @@ async function fetchCSV(url) {
   return null;
 }
 
-async function loadData() {
-  const csv = await fetchCSV(SHEET_URL);
-  if (!csv) { document.getElementById('loading').innerHTML='<h2 style="color:var(--bad)">⚠ Could not load data</h2><p>Check sheet sharing settings.</p>'; return; }
-  renderSales(Papa.parse(csv,{header:true,skipEmptyLines:true}).data);
-  document.getElementById('loading').style.display='none';
-  document.getElementById('last-updated').textContent='Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+function setGoalBar(prefix, actual, colorClass) {
+  const pct = Math.min((actual/GOAL)*100,100);
+  const remaining = GOAL - actual;
+  document.getElementById(`${prefix}-actual`).textContent = fmt$(actual);
+  document.getElementById(`${prefix}-pct`).textContent = pct.toFixed(1)+'%';
+  document.getElementById(`${prefix}-bar`).style.width = pct+'%';
+  document.getElementById(`${prefix}-remaining`).textContent = remaining>0?fmt$(remaining)+' remaining':'🎉 Goal reached!';
+  document.getElementById(`${prefix}-goal-label`).textContent = fmt$(GOAL);
+  document.getElementById(`${prefix}-goal-label-2`).textContent = fmt$(GOAL);
+  return { pct, remaining };
 }
 
-function renderSales(rows) {
-  const reps = rows.filter(r=>r['Name']&&r['Name'].trim()&&!r['Name'].startsWith('$')&&isNaN(r['Name'].charAt(0)));
-  const totalSales   = reps.reduce((s,r)=>s+parseFloat(String(r['Total Sales']||'0').replace(/[$,]/g,'')),0);
+async function loadData() {
+  const [soldCsv, installCsv] = await Promise.all([fetchCSV(SOLD_URL), fetchCSV(INSTALLED_URL)]);
+  if (!soldCsv || !installCsv) {
+    document.getElementById('loading').innerHTML = '<h2 style="color:var(--bad)">⚠ Could not load data</h2><p>Check sheet sharing settings.</p>';
+    return;
+  }
+  const soldRows    = Papa.parse(soldCsv,{header:true,skipEmptyLines:true}).data;
+  const installRows = Papa.parse(installCsv,{header:true,skipEmptyLines:true}).data;
+  render(soldRows, installRows);
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('last-updated').textContent = 'Updated ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+}
+
+function render(soldRows, installRows) {
+  // ── SOLD SIDE ──
+  const reps = soldRows.filter(r=>r['Name']&&r['Name'].trim()&&!r['Name'].startsWith('$')&&isNaN(r['Name'].charAt(0)));
+  const totalSold    = reps.reduce((s,r)=>s+parseFloat(String(r['Total Sales']||'0').replace(/[$,]/g,'')),0);
   const totalOpps    = reps.reduce((s,r)=>s+parseFloat(r['Sales Opportunity']||0),0);
   const totalClosed  = reps.reduce((s,r)=>s+parseFloat(r['Closed Opportunities']||0),0);
   const closeRate    = totalOpps>0?(totalClosed/totalOpps*100).toFixed(1):0;
-  const avgSale      = totalClosed>0?totalSales/totalClosed:0;
+  const avgSale      = totalClosed>0?totalSold/totalClosed:0;
   const totalWIP     = reps.reduce((s,r)=>s+parseFloat(r['WIP Jobs']||0),0);
 
-  document.getElementById('header-meta').textContent=`${reps.length} Reps · ${totalClosed} Closed Jobs`;
+  // ── INSTALLED SIDE ──
+  const divs = installRows.filter(r=>r['Name']&&r['Name'].trim());
+  const dataRows = divs.filter(r=>r['Name'].includes(':')||r['Name'].toLowerCase().includes('hvac'));
+  const totalInstalled = dataRows.reduce((s,r)=>s+parseFloat(String(r['Completed Revenue']||'0').replace(/[$,]/g,'')),0);
+  const totalCompleted = dataRows.reduce((s,r)=>s+parseFloat(r['Completed Jobs']||0),0);
+  const totalCanceled  = dataRows.reduce((s,r)=>s+parseFloat(r['Canceled Jobs']||0),0);
 
-  // Goal
-  const pct = Math.min((totalSales/GOAL)*100,100);
-  const remaining = GOAL-totalSales;
-  const pctColor = pct>=100?'var(--good)':pct>=75?'var(--warn)':'var(--bad)';
-  document.getElementById('goal-actual').textContent=fmt$(totalSales);
-  document.getElementById('goal-pct').textContent=pct.toFixed(1)+'%';
-  document.getElementById('goal-pct').style.color=pctColor;
-  document.getElementById('goal-bar').style.width=pct+'%';
-  document.getElementById('goal-remaining').textContent=remaining>0?fmt$(remaining)+' remaining':'🎉 Goal reached!';
-  document.getElementById('goal-remaining').style.color=pctColor;
-  document.getElementById('goal-target').textContent=fmt$(GOAL);
-  document.getElementById('goal-target-2').textContent=fmt$(GOAL);
+  document.getElementById('header-meta').textContent = `${reps.length} Reps · ${totalClosed} Sold · ${totalCompleted} Installed`;
 
-  // KPIs
-  document.getElementById('kpi-row').innerHTML=`
-    <div class="kpi"><div class="kpi-label">Total Sales</div><div class="kpi-val orange">${fmt$(totalSales)}</div><div class="kpi-sub">${totalClosed} closed deals</div></div>
-    <div class="kpi green"><div class="kpi-label">Team Close Rate</div><div class="kpi-val green">${closeRate}%</div><div class="kpi-sub">${totalClosed} of ${totalOpps} opps</div></div>
+  // Goal bars
+  setGoalBar('sold', totalSold);
+  setGoalBar('install', totalInstalled);
+
+  // Gap callout
+  const gap = totalSold - totalInstalled;
+  const gapEl = document.getElementById('sold-vs-install-gap');
+  if (gap > 0) {
+    gapEl.textContent = `${fmt$(gap)} sold but not yet installed`;
+    gapEl.style.color = 'var(--warn)';
+  } else {
+    gapEl.textContent = '';
+  }
+
+  // KPI row
+  document.getElementById('kpi-row').innerHTML = `
+    <div class="kpi"><div class="kpi-label">Team Close Rate</div><div class="kpi-val orange">${closeRate}%</div><div class="kpi-sub">${totalClosed} of ${totalOpps} opps</div></div>
     <div class="kpi"><div class="kpi-label">Avg Closed Sale</div><div class="kpi-val">${fmt$(avgSale)}</div><div class="kpi-sub">Per closed deal</div></div>
     <div class="kpi"><div class="kpi-label">WIP Jobs</div><div class="kpi-val">${totalWIP}</div><div class="kpi-sub">In progress</div></div>
     <div class="kpi"><div class="kpi-label">Active Reps</div><div class="kpi-val">${reps.length}</div><div class="kpi-sub">This period</div></div>
+    <div class="kpi blue"><div class="kpi-label">Completed Jobs</div><div class="kpi-val blue">${totalCompleted}</div><div class="kpi-sub">Installed</div></div>
+    <div class="kpi warn"><div class="kpi-label">Canceled Jobs</div><div class="kpi-val warn">${totalCanceled}</div><div class="kpi-sub">This period</div></div>
   `;
 
-  // Sort by total sales descending
+  // Rep table (sold)
   reps.sort((a,b) => parseFloat(String(b['Total Sales']||'0').replace(/[$,]/g,'')) - parseFloat(String(a['Total Sales']||'0').replace(/[$,]/g,'')));
-
-  // Table
-  document.getElementById('table-body').innerHTML=reps.map(r=>`
+  document.getElementById('rep-table-body').innerHTML = reps.map(r=>`
     <tr>
       <td class="name-cell">${r['Name'].trim()}</td>
       <td class="orange">${fmt$(r['Total Sales'])}</td>
       <td>${r['Sales Opportunity']||'-'}</td>
       <td>${pctPill(r['Close Rate'])}</td>
       <td class="val-cell">${fmt$(r['Closed Average Sale'])}</td>
-      <td>${fmt$(r['Total Sales from TGL'])}</td>
-      <td>${fmt$(r['Total Sales from Marketing Leads'])}</td>
       <td>${r['WIP Jobs']||'-'}</td>
+    </tr>`).join('');
+
+  // Division table (installed)
+  document.getElementById('div-table-body').innerHTML = dataRows.map(r=>`
+    <tr>
+      <td class="name-cell">${r['Name'].trim()}</td>
+      <td class="warn">${r['Canceled Jobs']||'-'}</td>
+      <td class="orange">${fmt$(r['Completed Revenue'])}</td>
+      <td>${fmt$(r['Current Monthly Pace'])}</td>
     </tr>`).join('');
 }
 
