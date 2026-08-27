@@ -75,7 +75,7 @@
   .kpi-sub { font-size: clamp(9px,0.95vh,13px); color: var(--text-muted); margin-top: 0.15vh; font-weight: 600; }
 
   /* BODY GRID */
-  .body-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 0.5vw; overflow: hidden; min-height: 0; }
+  .body-grid { display: grid; grid-template-columns: 1fr; gap: 0.5vw; overflow: hidden; min-height: 0; }
   .section { background: var(--card-bg); border: 1px solid var(--border); backdrop-filter: blur(6px); overflow: hidden; display: flex; flex-direction: column; min-height: 0; }
   .sec-header { display: flex; align-items: center; justify-content: space-between; padding: 0.6vh 1vw; border-bottom: 1px solid var(--border); flex-shrink: 0; }
   .sec-title { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(12px,1.6vh,22px); font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; }
@@ -165,25 +165,14 @@
   <!-- BODY -->
   <div class="body-grid">
     <div class="section">
-      <div class="sec-header"><span class="sec-title">Rep Detail</span><span class="sec-badge orange">Sold</span></div>
+      <div class="sec-header"><span class="sec-title">Rep Detail</span><span class="sec-badge orange">Sold — Individual Performance</span></div>
       <div class="table-wrap">
         <table>
           <thead><tr>
             <th>Rep</th><th>Total Sales</th><th>Opps</th><th>Close Rate</th>
-            <th>Avg Sale</th><th>WIP</th>
+            <th>Avg Sale</th><th>TGL Sales</th><th>Mktg Sales</th><th>WIP</th>
           </tr></thead>
           <tbody id="rep-table-body"></tbody>
-        </table>
-      </div>
-    </div>
-    <div class="section">
-      <div class="sec-header"><span class="sec-title">Division Detail</span><span class="sec-badge blue">Installed</span></div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr>
-            <th>Division</th><th>Canceled</th><th>Revenue</th><th>Monthly Pace</th>
-          </tr></thead>
-          <tbody id="div-table-body"></tbody>
         </table>
       </div>
     </div>
@@ -310,16 +299,9 @@ function render(soldRows, installRows) {
       <td>${r['Sales Opportunity']||'-'}</td>
       <td>${pctPill(r['Close Rate'])}</td>
       <td class="val-cell">${fmt$(r['Closed Average Sale'])}</td>
+      <td>${fmt$(r['Total Sales from TGL'])}</td>
+      <td>${fmt$(r['Total Sales from Marketing Leads'])}</td>
       <td>${r['WIP Jobs']||'-'}</td>
-    </tr>`).join('');
-
-  // Division table (installed)
-  document.getElementById('div-table-body').innerHTML = dataRows.map(r=>`
-    <tr>
-      <td class="name-cell">${r['Name'].trim()}</td>
-      <td class="warn">${r['Canceled Jobs']||'-'}</td>
-      <td class="orange">${fmt$(r['Completed Revenue'])}</td>
-      <td>${fmt$(r['Current Monthly Pace'])}</td>
     </tr>`).join('');
 }
 
